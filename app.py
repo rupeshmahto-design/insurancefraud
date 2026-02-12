@@ -7,9 +7,21 @@ import os
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from urllib.parse import urlparse
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
+
+# Database configuration - supports both SQLite (local) and PostgreSQL (Railway)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+USE_POSTGRES = DATABASE_URL is not None
+
+if USE_POSTGRES:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    print("🗄️  Using PostgreSQL database")
+else:
+    print("🗄️  Using SQLite database (local mode)")
 
 # Load models
 print("Loading models...")
@@ -56,9 +68,16 @@ FEATURE_COLS = [
 ]
 
 def get_db_connection():
-    conn = sqlite3.connect('data/fraud_detection.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+    """Get database connection - supports both SQLite and PostgreSQL"""
+    if USE_POSTGRES:
+        # PostgreSQL connection for Railway
+        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+        return conn
+    else:
+        # SQLite connection for local development
+        conn = sqlite3.connect('data/fraud_detection.db')
+        conn.row_factory = sqlite3.Row
+        return conn
 
 def check_rules(claim_data, provider_data):
     """Rule-based fraud detection - FULLY DYNAMIC"""
