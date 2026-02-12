@@ -160,7 +160,7 @@
             };
 
             try {
-                const response = await fetch('http://localhost:5000/api/analyze', {
+                const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data)
@@ -170,7 +170,7 @@
                 displayResult(result);
                 updateStats(result.decision);
             } catch (error) {
-                alert('Error: Make sure the Python server is running on http://localhost:5000');
+                alert('Error: Unable to connect to the server. Please try again.');
             }
         }
 

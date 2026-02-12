@@ -1235,7 +1235,7 @@
             panel.innerHTML = '<div class="loading pulse">🔍 Analyzing claim with AI models...</div>';
             
             try {
-                const response = await fetch('http://localhost:5000/api/analyze', {
+                const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -1246,7 +1246,7 @@
                 updateStats(result);
                 
             } catch (error) {
-                panel.innerHTML = '<div class="loading">❌ Error: Make sure the server is running on http://localhost:5000</div>';
+                panel.innerHTML = '<div class="loading">❌ Error: Unable to connect to the server. Please check your connection.</div>';
             }
         }
         

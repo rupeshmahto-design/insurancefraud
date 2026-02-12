@@ -845,7 +845,7 @@
             display.innerHTML = '<div class="loading"><div class="spinner"></div><p>Analyzing claim with AI...</p></div>';
 
             try {
-                const response = await fetch('http://localhost:5000/api/analyze', {
+                const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
