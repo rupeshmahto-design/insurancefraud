@@ -25,6 +25,11 @@ else:
 
 # Load models
 print("Loading models...")
+rf_model = None
+iso_model = None
+scaler = None
+encoders = None
+
 try:
     with open('models/rf_fraud_model.pkl', 'rb') as f:
         rf_model = pickle.load(f)
@@ -37,7 +42,7 @@ try:
     print("✅ Models loaded successfully")
 except Exception as e:
     print(f"⚠️  Could not load models: {e}")
-    print("Run 'python fraud_detection_system.py' first to generate models")
+    print("⚠️  App will run with rule-based detection only (ML features disabled)")
 
 # CPT code reference
 CPT_CODES = {
@@ -622,25 +627,33 @@ def analyze_claim():
         features = engineer_single_claim(data, provider_data)
         
         # ML predictions (if models loaded)
-        try:
-            features_scaled = scaler.transform(features)
-            fraud_prob = rf_model.predict_proba(features_scaled)[0][1] * 100
-            
-            # Use DYNAMIC anomaly calculation instead of Isolation Forest
-            anomaly_factors, dynamic_anomaly_score = identify_anomaly_factors(data, provider_data, features_scaled)
-            
-            # Blend with Isolation Forest (70% dynamic, 30% ML model)
-            iso_score = iso_model.score_samples(features_scaled)[0]
-            iso_anomaly = max(0, min(100, (1 - iso_score) * 50))
-            anomaly_risk = (dynamic_anomaly_score * 0.7) + (iso_anomaly * 0.3)
-            
-            fraud_factors = identify_fraud_factors(data, provider_data, fraud_prob)
-        except:
-            # Fallback if models not loaded
-            fraud_prob = 50
+        if rf_model and iso_model and scaler and encoders:
+            try:
+                features_scaled = scaler.transform(features)
+                fraud_prob = rf_model.predict_proba(features_scaled)[0][1] * 100
+                
+                # Use DYNAMIC anomaly calculation instead of Isolation Forest
+                anomaly_factors, dynamic_anomaly_score = identify_anomaly_factors(data, provider_data, features_scaled)
+                
+                # Blend with Isolation Forest (70% dynamic, 30% ML model)
+                iso_score = iso_model.score_samples(features_scaled)[0]
+                iso_anomaly = max(0, min(100, (1 - iso_score) * 50))
+                anomaly_risk = (dynamic_anomaly_score * 0.7) + (iso_anomaly * 0.3)
+                
+                fraud_factors = identify_fraud_factors(data, provider_data, fraud_prob)
+            except Exception as e:
+                print(f"ML prediction error: {e}")
+                # Fallback if prediction fails
+                fraud_prob = 50
+                anomaly_factors, dynamic_anomaly_score = identify_anomaly_factors(data, provider_data, None)
+                anomaly_risk = dynamic_anomaly_score
+                fraud_factors = [f"⚠️ Rule-based analysis only (ML error: {str(e)[:50]})"]
+        else:
+            # Models not loaded - use rule-based detection only
+            fraud_prob = rule_score  # Use rule score as fraud probability
             anomaly_factors, dynamic_anomaly_score = identify_anomaly_factors(data, provider_data, None)
             anomaly_risk = dynamic_anomaly_score
-            fraud_factors = ["Model not loaded"]
+            fraud_factors = ["✅ Rule-based fraud detection active", "⚠️ ML models not available - using policy rules and pattern analysis"]
         
         # Ensemble score
         final_score = (rule_score * 0.4) + (anomaly_risk * 0.3) + (fraud_prob * 0.3)
