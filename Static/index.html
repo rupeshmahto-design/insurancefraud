@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FraudShield AI</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; position: relative; }
+        .header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.3) 100%); }
+        .powered-by { margin-top: 12px; font-size: 13px; opacity: 0.9; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .powered-by .atlas-logo { font-weight: 700; font-size: 15px; color: #fff; border-bottom: 2px solid rgba(255,255,255,0.5); }
+        .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        input, select { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 14px; transition: border-color 0.3s; }
+        input:focus, select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        button { background: #667eea; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #764ba2; }
+        .result { margin-top: 20px; padding: 20px; border-radius: 10px; display: none; }
+        .green { background: #d4edda; border: 1px solid #c3e6cb; }
+        .yellow { background: #fff3cd; border: 1px solid #ffeeba; }
+        .orange { background: #ffeaa7; border: 1px solid #fdcb6e; }
+        .red { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 24px; font-weight: bold; color: #667eea; }
+        .test-btn { margin: 5px; padding: 10px 15px; font-size: 14px; }
+        .db-viewer-btn { 
+            background: #764ba2; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: bold; 
+            text-decoration: none; 
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .db-viewer-btn:hover { background: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ FraudShield AI</h1>
+            <p>Real-time Healthcare Fraud Detection System</p>
+            <div class="powered-by">
+                <span>Powered by</span>
+                <span class="atlas-logo">Protiviti Atlas</span>
+                <span style="font-size: 11px;">• Enterprise AI Platform</span>
+            </div>
+            <div style="margin-top: 15px;">
+                <a href="/demo.html" class="db-viewer-btn" style="background: #51cf66; margin-right: 10px;">🎯 Interactive Demo</a>
+                <a href="/executive.html" class="db-viewer-btn" style="background: #ff9800; margin-right: 10px;">👔 Executive Dashboard</a>
+                <a href="/database.html" class="db-viewer-btn">🗄️ View Database</a>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number" id="stat-straight">0</div>
+                <div>Straight-Through</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="stat-fast">0</div>
+                <div>Fast Track</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="stat-manual">0</div>
+                <div>Manual Review</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="stat-blocked">0</div>
+                <div>Blocked</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>New Claim Submission</h2>
+            <form id="claimForm">
+                <div class="form-group">
+                    <label>Provider ID</label>
+                    <select id="providerId">
+                        <option value="PRV01000">PRV01000 - Dr. Smith (Cardiology)</option>
+                        <option value="PRV01001">PRV01001 - Dr. Johnson (Orthopedics) ⚠️</option>
+                        <option value="PRV01002">PRV01002 - Dr. Williams (General Practice)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>CPT Code</label>
+                    <select id="cptCode">
+                        <option value="99213">99213 - Office visit, level 3 ($120)</option>
+                        <option value="99214">99214 - Office visit, level 4 ($180)</option>
+                        <option value="99215">99215 - Office visit, level 5 ($250)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Claim Amount ($)</label>
+                    <input type="number" id="claimAmount" value="150" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Units</label>
+                    <input type="number" id="units" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Service Date</label>
+                    <input type="date" id="serviceDate">
+                </div>
+                <div class="form-group">
+                    <label>Days to Submit</label>
+                    <input type="number" id="daysToSubmit" value="5">
+                </div>
+                <div class="form-group">
+                    <label>Patient Age</label>
+                    <input type="number" id="patientAge" value="45">
+                </div>
+                <button type="submit">🔍 Analyze Claim</button>
+            </form>
+
+            <div style="margin-top: 20px;">
+                <button type="button" class="test-btn" onclick="testScenario('upcoding')" style="background: #e74c3c;">Test: Upcoding Fraud</button>
+                <button type="button" class="test-btn" onclick="testScenario('normal')" style="background: #27ae60;">Test: Normal Claim</button>
+            </div>
+        </div>
+
+        <div id="result" class="result card">
+            <h3 id="decisionTitle"></h3>
+            <p id="decisionText"></p>
+            <div id="riskDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('serviceDate').valueAsDate = new Date();
+        
+        const stats = { straight: 0, fast: 0, manual: 0, blocked: 0 };
+
+        document.getElementById('claimForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await analyzeClaim();
+        });
+
+        async function analyzeClaim() {
+            const providerSelect = document.getElementById('providerId');
+            const providerText = providerSelect.options[providerSelect.selectedIndex].text;
+            
+            const data = {
+                claim_id: 'CLM' + Date.now(),
+                provider_id: providerSelect.value,
+                provider_display_name: providerText.split(' - ')[1] || providerText,
+                cpt_code: document.getElementById('cptCode').value,
+                claim_amount: parseFloat(document.getElementById('claimAmount').value),
+                units: parseInt(document.getElementById('units').value),
+                service_date: document.getElementById('serviceDate').value,
+                days_to_submit: parseInt(document.getElementById('daysToSubmit').value),
+                patient_age: parseInt(document.getElementById('patientAge').value),
+                geo_mismatch: 0
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/api/analyze', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                displayResult(result);
+                updateStats(result.decision);
+            } catch (error) {
+                alert('Error: Make sure the Python server is running on http://localhost:5000');
+            }
+        }
+
+        function displayResult(result) {
+            const resultDiv = document.getElementById('result');
+            const colors = { 'APPROVED': 'green', 'LOW_RISK': 'lightgreen', 'MANUAL_REVIEW': 'orange' };
+            
+            resultDiv.className = 'result card ' + colors[result.decision];
+            resultDiv.style.display = 'block';
+            
+            document.getElementById('decisionTitle').textContent = result.decision + ' (Risk Score: ' + result.risk_score + ')';
+            let actionText = result.action;
+            if (result.manual_review_reason) {
+                actionText += ' - ' + result.manual_review_reason;
+            }
+            document.getElementById('decisionText').textContent = actionText;
+            
+            let html = '<h4>Risk Analysis:</h4><ul>';
+            html += '<li><strong>Rule Score: ' + result.rule_score + '/100</strong><br><small style="color: #666; margin-left: 20px;">Violation points (0 = clean, higher = more violations)</small></li>';
+            html += '<li><strong>Fraud Probability: ' + result.fraud_probability + '%</strong><br><small style="color: #666; margin-left: 20px;">ML model confidence that claim is fraudulent</small></li>';
+            html += '<li><strong>Anomaly Score: ' + result.anomaly_score + '%</strong><br><small style="color: #666; margin-left: 20px;">How unusual this claim is (higher = more abnormal)</small></li>';;;
+            
+            if (result.critical_violations && result.critical_violations.length > 0) {
+                html += '<li style="color: #dc3545; font-weight: bold;"><strong>⚠️ POLICY VIOLATIONS (Manual Review Required):</strong><ul>';
+                result.critical_violations.forEach(v => html += '<li>' + v + '</li>');
+                html += '</ul></li>';
+            }
+            
+            if (result.violations.length > 0) {
+                html += '<li style="color: #ff6b6b;"><strong>Rule Violations:</strong><ul>';
+                result.violations.forEach(v => html += '<li>' + v + '</li>');
+                html += '</ul></li>';
+            }
+            
+            if (result.anomaly_factors && result.anomaly_factors.length > 0) {
+                html += '<li style="color: #ff9800;"><strong>Anomaly Factors:</strong><ul>';
+                result.anomaly_factors.forEach(f => html += '<li>' + f + '</li>');
+                html += '</ul></li>';
+            }
+            
+            if (result.fraud_factors && result.fraud_factors.length > 0) {
+                const fraudColor = result.fraud_probability > 50 ? '#dc3545' : '#17a2b8';
+                html += '<li style="color: ' + fraudColor + ';"><strong>ML Fraud Analysis:</strong><ul>';
+                result.fraud_factors.forEach(f => html += '<li>' + f + '</li>');
+                html += '</ul></li>';
+            }
+            
+            html += '</ul>';
+            document.getElementById('riskDetails').innerHTML = html;
+        }
+
+        function updateStats(decision) {
+            if (decision === 'APPROVED') stats.straight++;
+            else if (decision === 'LOW_RISK') stats.fast++;
+            else if (decision === 'MANUAL_REVIEW') {
+                stats.manual++;
+                stats.blocked++;  // Count as blocked for backwards compatibility
+            }
+            
+            document.getElementById('stat-straight').textContent = stats.straight;
+            document.getElementById('stat-fast').textContent = stats.fast;
+            document.getElementById('stat-manual').textContent = stats.manual;
+            document.getElementById('stat-blocked').textContent = stats.blocked;
+        }
+
+        function testScenario(type) {
+            let scenarioData;
+            
+            if (type === 'upcoding') {
+                scenarioData = {
+                    providerId: 'PRV01001',
+                    cptCode: '99213',
+                    claimAmount: '450',
+                    units: '1',
+                    daysToSubmit: '8',
+                    patientAge: '55'
+                };
+            } else if (type === 'normal') {
+                scenarioData = {
+                    providerId: 'PRV01000',
+                    cptCode: '99214',
+                    claimAmount: '175',
+                    units: '1',
+                    daysToSubmit: '5',
+                    patientAge: '45'
+                };
+            }
+            
+            // Populate all form fields
+            document.getElementById('providerId').value = scenarioData.providerId;
+            document.getElementById('cptCode').value = scenarioData.cptCode;
+            document.getElementById('claimAmount').value = scenarioData.claimAmount;
+            document.getElementById('units').value = scenarioData.units;
+            document.getElementById('daysToSubmit').value = scenarioData.daysToSubmit;
+            document.getElementById('patientAge').value = scenarioData.patientAge;
+            
+            // Visual feedback - highlight form briefly
+            const form = document.getElementById('claimForm');
+            form.style.background = '#e3f2fd';
+            form.style.transition = 'background 0.5s';
+            setTimeout(() => {
+                form.style.background = '';
+            }, 1000);
+            
+            // Auto-analyze
+            analyzeClaim();
+        }
+    </script>
+</body>
+</html>

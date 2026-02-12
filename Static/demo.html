@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FraudShield AI - Interactive Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .demo-container { 
+            max-width: 1600px; 
+            margin: 0 auto;
+        }
+        .demo-header {
+            background: rgba(255,255,255,0.98);
+            padding: 35px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .demo-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+            background-size: 200% 100%;
+            animation: gradientShift 3s ease infinite;
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .demo-header h1 {
+            color: #667eea;
+            font-size: 46px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        .demo-header p {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .powered-by {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #888;
+        }
+        .powered-by .atlas-logo {
+            font-weight: 700;
+            font-size: 16px;
+            background: linear-gradient(135deg, #0066cc 0%, #003d7a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .toast {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            min-width: 300px;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            pointer-events: auto;
+            animation: slideInRight 0.3s ease-out;
+            border-left: 4px solid;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast.success { border-left-color: #38A169; }
+        .toast.warning { border-left-color: #ED8936; }
+        .toast.error { border-left-color: #E53E3E; }
+        .toast.info { border-left-color: #3182CE; }
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .toast-content {
+            flex: 1;
+        }
+        .toast-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .toast-message {
+            font-size: 14px;
+            color: #666;
+        }
+        .toast-close {
+            cursor: pointer;
+            color: #999;
+            font-size: 20px;
+            line-height: 1;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .toast-close:hover { color: #333; }
+        .demo-nav {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .demo-nav button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        .demo-nav button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+        }
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 1200px) {
+            .grid-layout { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: rgba(255,255,255,0.98);
+            padding: 28px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+        }
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 16px;
+            text-align: left;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(102,126,234,0.4);
+        }
+        .stat-card:hover::before {
+            left: 100%;
+        }
+        .stat-card h3 {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .stat-card .stat-value {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .stat-card .number {
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .stat-card .trend {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .stat-card .trend.up { color: #68D391; }
+        .stat-card .trend.down { color: #FC8181; }
+        .stat-card .sparkline {
+            height: 30px;
+            opacity: 0.7;
+            margin-top: 8px;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.15);
+            transform: translateY(-1px);
+        }
+        .form-group input:hover, .form-group select:hover {
+            border-color: #b8c5f2;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.5);
+        }
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        .btn-primary:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+        }
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .scenario-btn {
+            padding: 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+        .scenario-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #667eea;
+            transform: scaleY(0);
+            transition: transform 0.3s;
+        }
+        .scenario-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(102,126,234,0.2);
+        }
+        .scenario-btn:hover::after {
+            transform: scaleY(1);
+        }
+        .scenario-btn.fraud {
+            border-color: #ff6b6b;
+            background: #fff5f5;
+        }
+        .scenario-btn.legit {
+            border-color: #51cf66;
+            background: #f0fff4;
+        }
+        .scenario-btn h4 {
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+        .scenario-btn p {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        /* Activity Feed */
+        .activity-feed {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .activity-feed::-webkit-scrollbar {
+            width: 8px;
+        }
+        .activity-feed::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .activity-feed::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .activity-item:hover {
+            background: #f8f9fa;
+        }
+        .activity-item.approved { border-left-color: #38A169; }
+        .activity-item.blocked { border-left-color: #E53E3E; }
+        .activity-item.review { border-left-color: #ED8936; }
+        .activity-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .activity-icon.approved { background: #C6F6D5; }
+        .activity-icon.blocked { background: #FED7D7; }
+        .activity-icon.review { background: #FEEBC8; }
+        .activity-content {
+            flex: 1;
+        }
+        .activity-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        .activity-details {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .activity-time {
+            font-size: 12px;
+            color: #999;
+        }
+        .scenario-btn .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-top: 6px;
+        }
+        .badge-fraud { background: #ff6b6b; color: white; }
+        .badge-legit { background: #51cf66; color: white; }
+        .result-panel {
+            margin-top: 25px;
+            padding: 25px;
+            border-radius: 15px;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-panel.show { display: block; }
+        .result-panel.approved {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 3px solid #28a745;
+        }
+        .result-panel.warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+            border: 3px solid #ffc107;
+        }
+        .result-panel.danger {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 3px solid #dc3545;
+        }
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .result-icon {
+            font-size: 48px;
+        }
+        .result-title {
+            flex: 1;
+        }
+        .result-title h3 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        .result-title p {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        .risk-meter {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .risk-bar {
+            height: 40px;
+            background: #e0e0e0;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        .risk-fill {
+            height: 100%;
+            border-radius: 20px;
+            transition: width 1s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .risk-low { background: linear-gradient(90deg, #51cf66, #40bf5f); }
+        .risk-medium { background: linear-gradient(90deg, #ffc107, #ff9800); }
+        .risk-high { background: linear-gradient(90deg, #ff6b6b, #dc3545); }
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .detail-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .detail-box h4 {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .detail-box .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .violations-list {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+        .violations-list h4 {
+            color: #dc3545;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .violations-list ul {
+            list-style: none;
+        }
+        .violations-list li {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #fff5f5;
+            border-left: 4px solid #ff6b6b;
+            border-radius: 4px;
+        }
+        .provider-profile {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+        .provider-profile h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .provider-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .provider-info-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .provider-info-item strong {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 18px;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🛡️ FraudShield AI</h1>
+            <p>Real-time Healthcare Fraud Detection powered by Machine Learning</p>
+            <div class="powered-by">
+                <span>Powered by</span>
+                <span class="atlas-logo">Protiviti Atlas</span>
+                <span style="font-size: 12px; color: #999;">• Enterprise AI Platform</span>
+            </div>
+            <div class="demo-nav">
+                <button onclick="window.location.href='/'">← Basic Mode</button>
+                <button onclick="window.location.href='/database.html'">🗄️ Database</button>
+                <button onclick="resetDemo()">🔄 Reset Demo</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>CLAIMS ANALYZED</h3>
+                <div class="stat-value">
+                    <div class="number" id="total-analyzed">0</div>
+                    <div class="trend" id="stat-total-trend"></div>
+                </div>
+                <div class="label">Total this session</div>
+            </div>
+            <div class="stat-card">
+                <h3>FRAUD DETECTED</h3>
+                <div class="stat-value">
+                    <div class="number" id="fraud-detected">0</div>
+                    <div class="trend" id="stat-fraud-trend"></div>
+                </div>
+                <div class="label">High risk blocked</div>
+            </div>
+            <div class="stat-card">
+                <h3>APPROVED</h3>
+                <div class="stat-value">
+                    <div class="number" id="approved-count">0</div>
+                    <div class="trend" id="stat-approved-trend"></div>
+                </div>
+                <div class="label">Legitimate claims</div>
+            </div>
+            <div class="stat-card">
+                <h3>SAVINGS</h3>
+                <div class="stat-value">
+                    <div class="number" id="money-saved">$0</div>
+                    <div class="trend" id="stat-savings-trend"></div>
+                </div>
+                <div class="label">Fraud prevented</div>
+            </div>
+        </div>
+        
+        <!-- Real-Time Activity Feed -->
+        <div class="card" style="margin-top: 20px;">
+            <h2 style="margin-bottom: 20px; color: #667eea; display: flex; align-items: center; gap: 10px;">
+                <span>🔔</span> Real-Time Activity Feed
+            </h2>
+            <div id="realtimeActivity" class="activity-feed" style="max-height: 400px; overflow-y: auto;">
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">📊</div>
+                    <div>Activity will appear here as you analyze claims</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <div class="card">
+                <h2>🎯 Test Scenarios</h2>
+                <p style="margin-bottom: 20px; color: #666;">Click any scenario to see AI fraud detection in action - Each triggers different detection layers</p>
+                
+                <div class="scenario-grid">
+                    <div class="scenario-btn legit" onclick="runScenario('normal')">
+                        <h4>✅ Normal Claim</h4>
+                        <p>Routine office visit</p>
+                        <p>$150 • 1 unit • 5 days</p>
+                        <span class="badge badge-legit">CLEAN</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('upcoding')">
+                        <h4>⚠️ Upcoding</h4>
+                        <p>Excessive amount</p>
+                        <p>$450 (3x normal)</p>
+                        <span class="badge badge-fraud">RULES</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('phantom')">
+                        <h4>👻 Phantom Billing</h4>
+                        <p>Excessive units</p>
+                        <p>$800 • 6 units</p>
+                        <span class="badge badge-fraud">RULES</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('suspicious_provider')">
+                        <h4>🚨 Risky Provider</h4>
+                        <p>Flagged provider</p>
+                        <p>Fraud history</p>
+                        <span class="badge badge-fraud">RULES</span>
+                    </div>
+                    
+                    <div class="scenario-btn legit" onclick="runScenario('high_value')">
+                        <h4>💰 High-Value Legit</h4>
+                        <p>Expensive valid claim</p>
+                        <p>$650 • CPT 93306</p>
+                        <span class="badge badge-legit">CLEAN</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('delayed')">
+                        <h4>⏰ Delayed Submission</h4>
+                        <p>Backdating pattern</p>
+                        <p>45 days + geo-mismatch</p>
+                        <span class="badge badge-fraud">FRAUD</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('weekend_abuse')">
+                        <h4>📅 Weekend Abuse</h4>
+                        <p>Saturday + high charges</p>
+                        <p>$380 • 3 units</p>
+                        <span class="badge badge-fraud">FRAUD</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('young_patient_fraud')">
+                        <h4>👶 Child + High Cost</h4>
+                        <p>Age 4 + $650</p>
+                        <p>Phantom patient</p>
+                        <span class="badge badge-fraud">FRAUD</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('elderly_fraud')">
+                        <h4>👴 Elderly Abuse</h4>
+                        <p>Age 92 + $850</p>
+                        <p>2 units</p>
+                        <span class="badge badge-fraud">FRAUD</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('backdating_phantom')">
+                        <h4>🕐 Backdating</h4>
+                        <p>65 days late</p>
+                        <p>Out-of-state</p>
+                        <span class="badge badge-fraud">FRAUD</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('unbundling_scheme')">
+                        <h4>💣 Unbundling Scheme</h4>
+                        <p>Systematic abuse</p>
+                        <p>$900 • 8 units</p>
+                        <span class="badge badge-fraud">FRAUD</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('same_day_rush')">
+                        <h4>⚡ Same-Day Rush</h4>
+                        <p>0 days submission</p>
+                        <p>Statistical outlier</p>
+                        <span class="badge badge-fraud">ANOMALY</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('month_end_timing')">
+                        <h4>📆 Month-End Cluster</h4>
+                        <p>Jan 31 service</p>
+                        <p>Billing cycle abuse</p>
+                        <span class="badge badge-fraud">ANOMALY</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('extreme_unbundling')">
+                        <h4>🚨 EXTREME Units</h4>
+                        <p>12 units abuse</p>
+                        <p>Repeat offender</p>
+                        <span class="badge badge-fraud">FRAUD</span>
+                    </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('policy_violation')">
+                        <h4>🔮 Future Service</h4>
+                        <p>March 2026 date</p>
+                        <p>Policy violation</p>
+                        <span class="badge badge-fraud">RULES</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <h3 style="margin-bottom: 15px; color: #667eea;">📊 Live Analytics</h3>
+                    <div class="chart-container">
+                        <canvas id="analysisChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📋 Manual Claim Input</h2>
+                <form id="claimForm">
+                    <div class="form-group">
+                        <label>Provider</label>
+                        <select id="providerId">
+                            <option value="PRV01000">Dr. Smith - Cardiology (Clean Record)</option>
+                            <option value="PRV01001">Dr. Johnson - Orthopedics (⚠️ 2 Flags)</option>
+                            <option value="PRV01002">Dr. Williams - General Practice</option>
+                            <option value="PRV01003">Dr. Garcia - Physical Therapy</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Procedure (CPT Code)</label>
+                        <select id="cptCode" onchange="updateExpectedAmount()">
+                            <option value="99213" data-base="120" data-max="200">99213 - Office visit Level 3 ($120-$200)</option>
+                            <option value="99214" data-base="180" data-max="300">99214 - Office visit Level 4 ($180-$300)</option>
+                            <option value="99215" data-base="250" data-max="400">99215 - Office visit Level 5 ($250-$400)</option>
+                            <option value="93306" data-base="450" data-max="700">93306 - Echocardiogram ($450-$700)</option>
+                            <option value="97110" data-base="95" data-max="160">97110 - Physical Therapy ($95-$160)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Claim Amount ($)</label>
+                        <input type="number" id="claimAmount" value="150" step="0.01" min="0">
+                        <small id="amountHint" style="color: #666; font-size: 12px;"></small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Units Billed</label>
+                        <input type="number" id="units" value="1" min="1" max="20">
+                        <small style="color: #666; font-size: 12px;">Normal: 1-2 units | Suspicious: 4+ units</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Service Date</label>
+                        <input type="date" id="serviceDate">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Days to Submit</label>
+                        <input type="number" id="daysToSubmit" value="5" min="0" max="100">
+                        <small style="color: #666; font-size: 12px;">Normal: 0-15 days | Suspicious: 25+ days</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Patient Age</label>
+                        <input type="number" id="patientAge" value="45" min="1" max="120">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">🔍 Analyze Claim with AI</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="resultPanel" class="result-panel"></div>
+    </div>
+
+    <script>
+        // Initialize
+        document.getElementById('serviceDate').valueAsDate = new Date();
+        updateExpectedAmount();
+        
+        let sessionStats = {
+            total: 0,
+            fraud: 0,
+            approved: 0,
+            savings: 0
+        };
+        
+        let analysisData = {
+            labels: [],
+            approved: [],
+            flagged: [],
+            blocked: []
+        };
+        
+        let analysisChart = null;
+        
+        // Initialize chart
+        function initChart() {
+            const ctx = document.getElementById('analysisChart').getContext('2d');
+            analysisChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: analysisData.labels,
+                    datasets: [
+                        {
+                            label: 'Approved',
+                            data: analysisData.approved,
+                            borderColor: '#51cf66',
+                            backgroundColor: 'rgba(81, 207, 102, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Flagged',
+                            data: analysisData.flagged,
+                            borderColor: '#ffc107',
+                            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Blocked',
+                            data: analysisData.blocked,
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        initChart();
+        
+        function updateExpectedAmount() {
+            const select = document.getElementById('cptCode');
+            const option = select.options[select.selectedIndex];
+            const max = option.getAttribute('data-max');
+            const base = option.getAttribute('data-base');
+            document.getElementById('amountHint').textContent = `Expected range: $${base} - $${max}`;
+        }
+        
+        function updateChart(decision) {
+            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            analysisData.labels.push(time);
+            
+            if (analysisData.labels.length > 10) {
+                analysisData.labels.shift();
+                analysisData.approved.shift();
+                analysisData.flagged.shift();
+                analysisData.blocked.shift();
+            }
+            
+            analysisData.approved.push(decision === 'APPROVED' || decision === 'LOW_RISK' ? 1 : 0);
+            analysisData.flagged.push(decision === 'MANUAL_REVIEW' ? 1 : 0);
+            analysisData.blocked.push(0);  // No longer using BLOCK decision
+            
+            analysisChart.update();
+        }
+        
+        function updateStats(result) {
+            sessionStats.total++;
+            
+            // High risk manual review or very high risk score counts as fraud detected
+            if (result.decision === 'MANUAL_REVIEW' && result.risk_score >= 75) {
+                sessionStats.fraud++;
+                sessionStats.savings += result.amount;
+            } else if (result.decision === 'APPROVED' || result.decision === 'LOW_RISK') {
+                sessionStats.approved++;
+            } else if (result.decision === 'MANUAL_REVIEW') {
+                // Medium risk manual review - count as flagged but not fraud
+            }
+            
+            document.getElementById('total-analyzed').textContent = sessionStats.total;
+            document.getElementById('fraud-detected').textContent = sessionStats.fraud;
+            document.getElementById('approved-count').textContent = sessionStats.approved;
+            document.getElementById('money-saved').textContent = '$' + sessionStats.savings.toFixed(0);
+            
+            updateChart(result.decision);
+        }
+        
+        function resetDemo() {
+            if (confirm('Reset all demo statistics?')) {
+                sessionStats = { total: 0, fraud: 0, approved: 0, savings: 0 };
+                analysisData = { labels: [], approved: [], flagged: [], blocked: [] };
+                updateStats({ decision: 'RESET', amount: 0 });
+                document.getElementById('resultPanel').classList.remove('show');
+            }
+        }
+        
+        // Predefined scenarios
+        const scenarios = {
+            normal: {
+                provider_id: 'PRV01000',
+                provider_display_name: 'Dr. Smith - Cardiology (Clean Record)',
+                cpt_code: '99213',
+                claim_amount: 150,
+                units: 1,
+                days_to_submit: 5,
+                patient_age: 45,
+                geo_mismatch: 0,
+                description: 'Normal Office Visit - Clean'
+            },
+            upcoding: {
+                provider_id: 'PRV01001',
+                provider_display_name: 'Dr. Johnson - Orthopedics (⚠️ 2 Flags)',
+                cpt_code: '99213',
+                claim_amount: 450,
+                units: 1,
+                days_to_submit: 8,
+                patient_age: 55,
+                geo_mismatch: 0,
+                description: 'Upcoding Fraud - Excessive Fee'
+            },
+            phantom: {
+                provider_id: 'PRV01001',
+                provider_display_name: 'Dr. Johnson - Orthopedics (⚠️ 2 Flags)',
+                cpt_code: '97110',
+                claim_amount: 800,
+                units: 6,
+                days_to_submit: 12,
+                patient_age: 62,
+                geo_mismatch: 0,
+                description: 'Phantom Billing - Excessive Units'
+            },
+            suspicious_provider: {
+                provider_id: 'PRV01001',
+                provider_display_name: 'Dr. Johnson - Orthopedics (⚠️ 2 Flags)',
+                cpt_code: '99214',
+                claim_amount: 350,
+                units: 1,
+                days_to_submit: 7,
+                patient_age: 48,
+                geo_mismatch: 0,
+                description: 'Suspicious Provider with History'
+            },
+            high_value: {
+                provider_id: 'PRV01000',
+                provider_display_name: 'Dr. Smith - Cardiology (Clean Record)',
+                cpt_code: '93306',
+                claim_amount: 650,
+                units: 1,
+                days_to_submit: 3,
+                patient_age: 68,
+                geo_mismatch: 0,
+                description: 'High-Value Legitimate Claim'
+            },
+            delayed: {
+                provider_id: 'PRV01002',
+                provider_display_name: 'Dr. Williams - General Practice',
+                cpt_code: '99214',
+                claim_amount: 280,
+                units: 1,
+                days_to_submit: 45,
+                patient_age: 52,
+                geo_mismatch: 1,
+                description: 'Delayed Submission - Suspicious'
+            },
+            weekend_abuse: {
+                provider_id: 'PRV01001',
+                provider_display_name: 'Dr. Johnson - Orthopedics (⚠️ 2 Flags)',
+                cpt_code: '99214',
+                claim_amount: 380,
+                units: 3,
+                days_to_submit: 7,
+                patient_age: 58,
+                geo_mismatch: 0,
+                service_date: '2026-02-08',  // Saturday
+                description: 'Weekend + High Charges Pattern'
+            },
+            young_patient_fraud: {
+                provider_id: 'PRV01001',
+                provider_display_name: 'Dr. Johnson - Orthopedics (⚠️ 2 Flags)',
+                cpt_code: '99215',
+                claim_amount: 650,
+                units: 1,
+                days_to_submit: 5,
+                patient_age: 4,
+                geo_mismatch: 0,
+                description: 'Young Child + Very High Cost'
+            },
+            elderly_fraud: {
+                provider_id: 'PRV01002',
+                provider_display_name: 'Dr. Williams - General Practice',
+                cpt_code: '93306',
+                claim_amount: 850,
+                units: 2,
+                days_to_submit: 15,
+                patient_age: 92,
+                geo_mismatch: 0,
+                description: 'Elderly Patient + High Cost Pattern'
+            },
+            backdating_phantom: {
+                provider_id: 'PRV01002',
+                provider_display_name: 'Dr. Williams - General Practice',
+                cpt_code: '97110',
+                claim_amount: 180,
+                units: 1,
+                days_to_submit: 65,
+                patient_age: 45,
+                geo_mismatch: 1,
+                description: 'Backdating + Geographic Mismatch'
+            },
+            unbundling_scheme: {
+                provider_id: 'PRV01001',
+                provider_display_name: 'Dr. Johnson - Orthopedics (⚠️ 2 Flags)',
+                cpt_code: '97110',
+                claim_amount: 900,
+                units: 8,
+                days_to_submit: 5,
+                patient_age: 55,
+                geo_mismatch: 0,
+                description: 'Systematic Unbundling Scheme'
+            },
+            same_day_rush: {
+                provider_id: 'PRV01000',
+                provider_display_name: 'Dr. Smith - Cardiology (Clean Record)',
+                cpt_code: '99213',
+                claim_amount: 180,
+                units: 1,
+                days_to_submit: 0,
+                patient_age: 45,
+                geo_mismatch: 0,
+                description: 'Same-Day Submission (Anomaly)'
+            },
+            month_end_timing: {
+                provider_id: 'PRV01002',
+                provider_display_name: 'Dr. Williams - General Practice',
+                cpt_code: '99214',
+                claim_amount: 280,
+                units: 1,
+                days_to_submit: 5,
+                patient_age: 50,
+                geo_mismatch: 0,
+                service_date: '2026-01-31',  // Month-end
+                description: 'Month-End Billing Clustering'
+            },
+            extreme_unbundling: {
+                provider_id: 'PRV01001',
+                provider_display_name: 'Dr. Johnson - Orthopedics (⚠️ 2 Flags)',
+                cpt_code: '99213',
+                claim_amount: 200,
+                units: 12,
+                days_to_submit: 8,
+                patient_age: 48,
+                geo_mismatch: 0,
+                description: 'EXTREME Unbundling Abuse'
+            },
+            policy_violation: {
+                provider_id: 'PRV01000',
+                provider_display_name: 'Dr. Smith - Cardiology (Clean Record)',
+                cpt_code: '99214',
+                claim_amount: 280,
+                units: 1,
+                days_to_submit: 5,
+                patient_age: 50,
+                geo_mismatch: 0,
+                service_date: '2026-03-15',  // Future date
+                description: 'Future Service Date (Policy Violation)'
+            }
+        };
+        
+        async function runScenario(scenarioName) {
+            const scenario = scenarios[scenarioName];
+            
+            // Populate manual form fields with scenario data
+            document.getElementById('providerId').value = scenario.provider_id;
+            document.getElementById('cptCode').value = scenario.cpt_code;
+            document.getElementById('claimAmount').value = scenario.claim_amount;
+            document.getElementById('units').value = scenario.units;
+            document.getElementById('daysToSubmit').value = scenario.days_to_submit;
+            document.getElementById('patientAge').value = scenario.patient_age;
+            
+            // Set service date if provided, otherwise use today
+            if (scenario.service_date) {
+                document.getElementById('serviceDate').value = scenario.service_date;
+            } else {
+                document.getElementById('serviceDate').valueAsDate = new Date();
+            }
+            
+            updateExpectedAmount();
+            
+            // Visual feedback - highlight form
+            const formCard = document.querySelector('#claimForm').closest('.card');
+            formCard.style.background = 'rgba(102, 126, 234, 0.1)';
+            formCard.style.transform = 'scale(1.02)';
+            formCard.style.transition = 'all 0.3s';
+            setTimeout(() => {
+                formCard.style.background = 'rgba(255,255,255,0.95)';
+                formCard.style.transform = 'scale(1)';
+            }, 800);
+            
+            // Get provider display name from the populated dropdown
+            const providerSelect = document.getElementById('providerId');
+            const providerText = providerSelect.options[providerSelect.selectedIndex].text;
+            
+            const data = {
+                claim_id: 'CLM' + Date.now(),
+                service_date: scenario.service_date || new Date().toISOString().split('T')[0],
+                provider_display_name: providerText.split(' - ')[1] || providerText,
+                ...scenario
+            };
+            
+            await analyzeClaimData(data);
+        }
+        
+        document.getElementById('claimForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const providerSelect = document.getElementById('providerId');
+            const providerText = providerSelect.options[providerSelect.selectedIndex].text;
+            
+            const data = {
+                claim_id: 'CLM' + Date.now(),
+                provider_id: providerSelect.value,
+                provider_display_name: providerText.split(' - ')[1] || providerText,
+                cpt_code: document.getElementById('cptCode').value,
+                claim_amount: parseFloat(document.getElementById('claimAmount').value),
+                units: parseInt(document.getElementById('units').value),
+                service_date: document.getElementById('serviceDate').value,
+                days_to_submit: parseInt(document.getElementById('daysToSubmit').value),
+                patient_age: parseInt(document.getElementById('patientAge').value),
+                geo_mismatch: 0,
+                description: 'Manual Input Claim'
+            };
+            
+            await analyzeClaimData(data);
+        });
+        
+        async function analyzeClaimData(data) {
+            // Show loading
+            const panel = document.getElementById('resultPanel');
+            panel.className = 'result-panel show';
+            panel.innerHTML = '<div class="loading pulse">🔍 Analyzing claim with AI models...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                displayDetailedResult(result, data);
+                updateStats(result);
+                
+            } catch (error) {
+                panel.innerHTML = '<div class="loading">❌ Error: Make sure the server is running on http://localhost:5000</div>';
+            }
+        }
+        
+        function displayDetailedResult(result, inputData) {
+            const panel = document.getElementById('resultPanel');
+            
+            let panelClass = 'result-panel show ';
+            let icon = '';
+            let title = '';
+            let subtitle = '';
+            
+            if (result.decision === 'APPROVED') {
+                panelClass += 'approved';
+                icon = '✅';
+                title = 'APPROVED';
+                subtitle = 'Clean claim - All checks passed';
+            } else if (result.decision === 'LOW_RISK') {
+                panelClass += 'approved';
+                icon = '✓';
+                title = 'LOW RISK - FAST TRACK';
+                subtitle = 'Minor concerns - Expedited processing';
+            } else if (result.decision === 'MANUAL_REVIEW') {
+                panelClass += 'warning';
+                icon = '⚠️';
+                title = 'MANUAL REVIEW REQUIRED';
+                if (result.manual_review_reason) {
+                    subtitle = result.manual_review_reason;
+                } else {
+                    subtitle = 'Risk detected - Requires human review';
+                }
+            } else {
+                panelClass += 'danger';
+                icon = '🚫';
+                title = 'FLAGGED FOR INVESTIGATION';
+                subtitle = 'High risk detected - Investigation required';
+            }
+            
+            panel.className = panelClass;
+            
+            const riskClass = result.risk_score >= 75 ? 'risk-high' : 
+                             result.risk_score >= 40 ? 'risk-medium' : 'risk-low';
+            
+            let html = `
+                <div class="result-header">
+                    <div class="result-icon">${icon}</div>
+                    <div class="result-title">
+                        <h3>${title}</h3>
+                        <p>${subtitle}</p>
+                    </div>
+                </div>
+                
+                <div class="risk-meter">
+                    <h4 style="margin-bottom: 10px;">Overall Risk Score</h4>
+                    <div class="risk-bar">
+                        <div class="risk-fill ${riskClass}" style="width: ${result.risk_score}%">
+                            ${result.risk_score.toFixed(1)}%
+                        </div>
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin-top: 8px; text-align: center;">Combined score from all AI detection layers (0-100%)</p>
+                </div>
+                
+                <div class="details-grid">
+                    <div class="detail-box">
+                        <h4>Fraud Probability</h4>
+                        <div class="value" style="color: ${result.fraud_probability > 50 ? '#dc3545' : '#51cf66'}">
+                            ${result.fraud_probability.toFixed(1)}%
+                        </div>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">ML model confidence</p>
+                    </div>
+                    <div class="detail-box">
+                        <h4>Rule Score</h4>
+                        <div class="value">${result.rule_score}/100</div>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">Violations (0 = best)</p>
+                    </div>
+                    <div class="detail-box">
+                        <h4>Anomaly Score</h4>
+                        <div class="value">${result.anomaly_score.toFixed(1)}%</div>
+                        <p style="font-size: 11px; color: #666; margin-top: 8px;">Unusualness (higher = riskier)</p>
+                    </div>
+                </div>
+                
+                <div class="provider-profile">
+                    <h4>👨‍⚕️ Provider Profile</h4>
+                    <div class="provider-info">
+                        <div class="provider-info-item">
+                            <strong>Name</strong>
+                            ${result.provider_name}
+                        </div>
+                        <div class="provider-info-item">
+                            <strong>Specialty</strong>
+                            ${result.specialty}
+                        </div>
+                        <div class="provider-info-item">
+                            <strong>Claim Amount</strong>
+                            $${result.amount.toFixed(2)}
+                        </div>
+                        <div class="provider-info-item">
+                            <strong>CPT Code</strong>
+                            ${result.cpt_code}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Show critical violations first if present
+            if (result.critical_violations && result.critical_violations.length > 0) {
+                html += `
+                    <div class="violations-list" style="border-left: 4px solid #dc3545; background: rgba(220,53,69,0.1);">
+                        <h4 style="color: #dc3545;">🚨 POLICY VIOLATIONS - Manual Review Required</h4>
+                        <ul>`;
+                result.critical_violations.forEach(v => {
+                    html += `<li style="color: #dc3545; font-weight: bold;">⛔ ${v}</li>`;
+                });
+                html += `</ul></div>`;
+            }
+            
+            if (result.violations && result.violations.length > 0) {
+                html += `
+                    <div class="violations-list" style="margin-top: ${result.critical_violations && result.critical_violations.length > 0 ? '15px' : '0'};">
+                        <h4>⚠️ Rule Violations Detected</h4>
+                        <ul>
+                            ${result.violations.map(v => `<li>⚠️ ${v}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div style="background: #f0fff4; padding: 15px; border-radius: 10px; border-left: 4px solid #51cf66; margin-top: 15px;">
+                        <strong style="color: #28a745;">✓ No Rule Violations</strong>
+                        <p style="margin: 5px 0 0 0; color: #666;">All business rules passed successfully</p>
+                    </div>
+                `;
+            }
+            
+            if (result.anomaly_factors && result.anomaly_factors.length > 0) {
+                html += `
+                    <div style="background: #fff8f0; padding: 15px; border-radius: 10px; border-left: 4px solid #ffa500; margin-top: 15px;">
+                        <h4 style="color: #ff9800; margin-bottom: 10px;">🔍 Anomaly Detection Insights</h4>
+                        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">What makes this claim unusual:</p>
+                        <ul style="list-style: none; padding: 0;">
+                            ${result.anomaly_factors.map(f => `<li style="padding: 8px 0; color: #555;">• ${f}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (result.fraud_factors && result.fraud_factors.length > 0) {
+                const fraudColor = result.fraud_probability > 50 ? '#dc3545' : '#17a2b8';
+                const fraudBg = result.fraud_probability > 50 ? '#fff5f5' : '#f0f8ff';
+                html += `
+                    <div style="background: ${fraudBg}; padding: 15px; border-radius: 10px; border-left: 4px solid ${fraudColor}; margin-top: 15px;">
+                        <h4 style="color: ${fraudColor}; margin-bottom: 10px;">🤖 ML Fraud Detection Analysis</h4>
+                        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Machine learning model assessment:</p>
+                        <ul style="list-style: none; padding: 0;">
+                            ${result.fraud_factors.map(f => `<li style="padding: 8px 0; color: #555;">${f}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div style="margin-top: 20px; padding: 20px; background: white; border-radius: 10px;">
+                    <h4 style="margin-bottom: 15px; color: #667eea;">🤖 AI Model Insights</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div>
+                            <strong style="font-size: 13px; color: #666;">Random Forest:</strong>
+                            <div style="font-size: 18px; color: #667eea; font-weight: bold;">
+                                ${result.fraud_probability.toFixed(1)}% fraud risk
+                            </div>
+                        </div>
+                        <div>
+                            <strong style="font-size: 13px; color: #666;">Model Confidence:</strong>
+                            <div style="font-size: 18px; color: #667eea; font-weight: bold;">
+                                ${result.model_confidence.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 13px; color: #666;">
+                        <strong>Top Risk Factors:</strong> ${result.top_features.join(', ')}
+                    </div>
+                </div>
+            `;
+            
+            panel.innerHTML = html;
+            
+            // Add enterprise visualizations
+            addEnterpriseVisualizations(result, inputData);
+        }
+        
+        // ==================== ENTERPRISE UI ENHANCEMENTS ====================
+        
+        // Toast Notification System
+        function showToast(type, title, message) {
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container';
+                document.body.appendChild(toastContainer);
+            }
+            
+            const icons = {
+                success: '✅',
+                warning: '⚠️',
+                error: '❌',
+                info: 'ℹ️'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type]}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <div class="toast-close" onclick="this.parentElement.remove()">×</div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+        
+        // Activity Log System
+        let activityLog = [];
+        
+        function addToActivityLog(type, claimId, provider, amount, decision) {
+            activityLog.unshift({
+                type,
+                claimId,
+                provider,
+                amount,
+                decision,
+                timestamp: new Date()
+            });
+            
+            if (activityLog.length > 15) activityLog.pop();
+            
+            // Update activity feed
+            const feed = document.getElementById('realtimeActivity');
+            if (feed) {
+                const icons = { approved: '✓', blocked: '✖', review: '⚠' };
+                const formatTime = (date) => {
+                    const seconds = Math.floor((new Date() - date) / 1000);
+                    if (seconds < 60) return 'Just now';
+                    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+                    return `${Math.floor(seconds / 3600)}h ago`;
+                };
+                
+                feed.innerHTML = activityLog.map(activity => `
+                    <div class="activity-item ${activity.type}">
+                        <div class="activity-icon ${activity.type}">${icons[activity.type]}</div>
+                        <div class="activity-content">
+                            <div class="activity-title">${activity.decision}</div>
+                            <div class="activity-details">${activity.claimId} • ${activity.provider} • $${activity.amount}</div>
+                            <div class="activity-time">${formatTime(activity.timestamp)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Enhanced stat tracking with trends
+        let statsHistory = { total: [], fraud: [], approved: [], savings: [] };
+        
+        function updateStatWithTrend(statName, value) {
+            statsHistory[statName].push(value);
+            if (statsHistory[statName].length > 10) statsHistory[statName].shift();
+            
+            // Calculate and show trend
+            if (statsHistory[statName].length >= 2) {
+                const recent = statsHistory[statName].slice(-2);
+                const change = ((recent[1] - recent[0]) / (recent[0] || 1) * 100).toFixed(1);
+                const trendEl = document.getElementById(`stat-${statName}-trend`);
+                if (trendEl) {
+                    const arrow = change > 0 ? '↗' : change < 0 ? '↘' : '→';
+                    const color = change > 0 ? '#68D391' : change < 0 ? '#FC8181' : '#A0AEC0';
+                    trendEl.innerHTML = `<span style="color:${color}; font-size: 14px; font-weight: 600;">${arrow} ${Math.abs(change)}%</span>`;
+                }
+            }
+        }
+        
+        // Risk Breakdown Visualization
+        function createRiskBreakdown(ruleScore, anomalyScore, fraudProb) {
+            const total = Math.max(ruleScore + anomalyScore + fraudProb, 1);
+            const rulePercent = (ruleScore / total * 100).toFixed(1);
+            const anomalyPercent = (anomalyScore / total * 100).toFixed(1);
+            const fraudPercent = (fraudProb / total * 100).toFixed(1);
+            
+            return `
+                <div style="margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 12px;">
+                    <h4 style="margin-bottom: 15px; color: #333;">📊 Risk Score Composition</h4>
+                    <div style="height: 50px; display: flex; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-bottom: 15px;">
+                        <div style="width: ${rulePercent}%; background: linear-gradient(135deg, #E53E3E, #C53030); 
+                             display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; 
+                             transition: all 0.3s; cursor: pointer;" title="Rule Violations: ${ruleScore} points">
+                            ${rulePercent > 15 ? rulePercent + '%' : ''}
+                        </div>
+                        <div style="width: ${anomalyPercent}%; background: linear-gradient(135deg, #ED8936, #DD6B20); 
+                             display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;
+                             transition: all 0.3s; cursor: pointer;" title="Anomaly Detection: ${anomalyScore} points">
+                            ${anomalyPercent > 15 ? anomalyPercent + '%' : ''}
+                        </div>
+                        <div style="width: ${fraudPercent}%; background: linear-gradient(135deg, #F6AD55, #ED8936);
+                             display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;
+                             transition: all 0.3s; cursor: pointer;" title="Fraud Probability: ${fraudProb}%">
+                            ${fraudPercent > 15 ? fraudPercent + '%' : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-around; font-size: 13px; color: #666;">
+                        <div><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #E53E3E; margin-right: 6px;"></span>Rules (${ruleScore})</div>
+                        <div><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #ED8936; margin-right: 6px;"></span>Anomaly (${anomalyScore})</div>
+                        <div><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #F6AD55; margin-right: 6px;"></span>ML Fraud (${fraudProb}%)</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Confidence Gauge
+        function createConfidenceGauge(confidence) {
+            const angle = (confidence / 100 * 180) - 90;
+            const color = confidence < 50 ? '#E53E3E' : confidence < 80 ? '#ED8936' : '#38A169';
+            const label = confidence < 50 ? 'Low Confidence' : confidence < 80 ? 'Medium Confidence' : 'High Confidence';
+            
+            return `
+                <div style="margin: 25px 0; padding: 20px; background: white; border-radius: 12px; text-align: center;">
+                    <h4 style="margin-bottom: 15px; color: #333;">🎯 Model Confidence</h4>
+                    <div style="position: relative; height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <svg width="220" height="120" viewBox="0 0 220 120">
+                            <path d="M 20 100 A 90 90 0 0 1 200 100" fill="none" stroke="#E2E8F0" stroke-width="20" stroke-linecap="round"/>
+                            <path d="M 20 100 A 90 90 0 0 1 200 100" fill="none" stroke="url(#gaugeGradient)" stroke-width="20" stroke-linecap="round"
+                                  stroke-dasharray="${(confidence/100) * 283} 283" style="transition: stroke-dasharray 1s ease-out;"/>
+                            <defs>
+                                <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#E53E3E;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#ED8936;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#38A169;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <text x="110" y="85" text-anchor="middle" style="font-size: 36px; font-weight: 700; fill: #333;">${confidence}%</text>
+                        </svg>
+                        <div style="font-size: 14px; color: ${color}; font-weight: 600; margin-top: 5px;">${label}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Add all enterprise visualizations to result panel
+        function addEnterpriseVisualizations(result, inputData) {
+            // Show toast notification
+            const toastType = result.decision === 'BLOCK' ? 'error' : 
+                            result.decision === 'MANUAL_REVIEW' ? 'warning' : 'success';
+            const toastTitle = result.decision === 'BLOCK' ? 'Fraud Blocked' :
+                             result.decision === 'MANUAL_REVIEW' ? 'Review Required' : 'Claim Approved';
+            showToast(toastType, toastTitle, `Claim ${inputData.claim_id} processed`);
+            
+            // Add to activity log
+            const activityType = result.decision === 'BLOCK' ? 'blocked' :
+                                result.decision === 'MANUAL_REVIEW' ? 'review' : 'approved';
+            addToActivityLog(
+                activityType,
+                inputData.claim_id,
+                inputData.provider_display_name || 'Unknown Provider',
+                inputData.claim_amount,
+                result.decision
+            );
+            
+            // Update stats with trends
+            updateStatWithTrend('total', sessionStats.total);
+            updateStatWithTrend('fraud', sessionStats.fraud);
+            updateStatWithTrend('approved', sessionStats.approved);
+            updateStatWithTrend('savings', Math.floor(sessionStats.savings));
+            
+            // Add enhanced visualizations to result panel
+            const panel = document.getElementById('resultPanel');
+            if (panel && result) {
+                const riskBreakdown = createRiskBreakdown(
+                    result.rule_violations_score || 0,
+                    result.anomaly_score || 0,
+                    result.fraud_probability || 0
+                );
+                
+                const confidenceGauge = createConfidenceGauge(
+                    Math.round(result.fraud_probability || 50)
+                );
+                
+                const insertPoint = panel.querySelector('.details-grid');
+                if (insertPoint) {
+                    insertPoint.insertAdjacentHTML('afterend', riskBreakdown + confidenceGauge);
+                }
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                showToast('info', 'FraudShield AI Ready', 'Enterprise fraud detection system initialized');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

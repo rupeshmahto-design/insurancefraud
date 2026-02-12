@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FraudShield AI - Database Viewer</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .header { 
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        h1 { 
+            color: #667eea; 
+            margin: 0;
+            font-size: 36px;
+        }
+        .nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .nav button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            transition: all 0.3s;
+            background: #f0f0f0;
+            color: #333;
+        }
+        .nav button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .nav button.active {
+            background: #667eea;
+            color: white;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .summary-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .summary-card .subtitle {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        .section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        tr:hover {
+            background: #f9f9f9;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-fraud { background: #ff6b6b; color: white; }
+        .badge-legit { background: #51cf66; color: white; }
+        .badge-high { background: #ff6b6b; color: white; }
+        .badge-medium { background: #ffa94d; color: white; }
+        .badge-low { background: #51cf66; color: white; }
+        .badge-suspicious { background: #ff6b6b; color: white; }
+        .badge-active { background: #51cf66; color: white; }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 18px;
+        }
+        .export-btn {
+            background: #51cf66;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 10px 5px;
+        }
+        .export-btn:hover {
+            background: #40bf5f;
+        }
+        .home-btn {
+            background: #764ba2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .filter-controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .filter-controls label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .filter-controls select, .filter-controls input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗄️ FraudShield AI - Database Viewer</h1>
+            <p style="color: #666; margin-top: 10px;">View and analyze your healthcare fraud detection data</p>
+            <a href="/" class="home-btn">← Back to Analyzer</a>
+        </div>
+
+        <div id="summarySection" class="summary-grid"></div>
+
+        <div class="nav">
+            <button onclick="showSection('summary')" class="active">📊 Dashboard</button>
+            <button onclick="showSection('claims')">📋 Claims</button>
+            <button onclick="showSection('providers')">👨‍⚕️ Providers</button>
+            <button onclick="showSection('decisions')">✅ Decisions</button>
+            <button onclick="showSection('fraud')">🚨 Fraud Only</button>
+        </div>
+
+        <!-- Summary Section -->
+        <div id="summary" class="section active">
+            <h2>Database Overview</h2>
+            <div id="summaryDetails"></div>
+        </div>
+
+        <!-- Claims Section -->
+        <div id="claims" class="section">
+            <h2>All Claims</h2>
+            <div class="filter-controls">
+                <label>Show:</label>
+                <select id="claimLimit" onchange="loadClaims()">
+                    <option value="50">50 records</option>
+                    <option value="100" selected>100 records</option>
+                    <option value="500">500 records</option>
+                    <option value="1000">1000 records</option>
+                </select>
+                <button class="export-btn" onclick="exportTable('claims')">📥 Export CSV</button>
+            </div>
+            <div id="claimsTable"></div>
+        </div>
+
+        <!-- Providers Section -->
+        <div id="providers" class="section">
+            <h2>Healthcare Providers</h2>
+            <button class="export-btn" onclick="exportTable('providers')">📥 Export CSV</button>
+            <div id="providersTable"></div>
+        </div>
+
+        <!-- Decisions Section -->
+        <div id="decisions" class="section">
+            <h2>Claim Decisions</h2>
+            <div class="filter-controls">
+                <label>Show:</label>
+                <select id="decisionLimit" onchange="loadDecisions()">
+                    <option value="50" selected>50 records</option>
+                    <option value="100">100 records</option>
+                    <option value="200">200 records</option>
+                </select>
+                <button class="export-btn" onclick="exportTable('decisions')">📥 Export CSV</button>
+            </div>
+            <div id="decisionsTable"></div>
+        </div>
+
+        <!-- Fraud Section -->
+        <div id="fraud" class="section">
+            <h2>Fraudulent Claims Only</h2>
+            <button class="export-btn" onclick="exportTable('fraud')">📥 Export CSV</button>
+            <div id="fraudTable"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = {};
+
+        async function loadSummary() {
+            try {
+                const response = await fetch('/api/database-summary');
+                const data = await response.json();
+                
+                document.getElementById('summarySection').innerHTML = `
+                    <div class="summary-card">
+                        <h3>TOTAL CLAIMS</h3>
+                        <div class="number">${data.claims.total.toLocaleString()}</div>
+                        <div class="subtitle">Avg: $${data.claims.avg_claim_amount.toFixed(2)}</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>FRAUD RATE</h3>
+                        <div class="number">${data.claims.fraud_rate}%</div>
+                        <div class="subtitle">${data.claims.fraudulent} fraudulent</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>PROVIDERS</h3>
+                        <div class="number">${data.providers.total}</div>
+                        <div class="subtitle">${data.providers.suspicious} suspicious</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>DECISIONS MADE</h3>
+                        <div class="number">${data.decisions.total}</div>
+                        <div class="subtitle">AI Analyzed</div>
+                    </div>
+                `;
+
+                let fraudTypeHtml = '<h3>Fraud by Type</h3><table><tr><th>Type</th><th>Count</th></tr>';
+                for (let [type, count] of Object.entries(data.fraud_types)) {
+                    if (type !== 'none') {
+                        fraudTypeHtml += `<tr><td style="text-transform: capitalize;">${type}</td><td>${count}</td></tr>`;
+                    }
+                }
+                fraudTypeHtml += '</table>';
+                
+                document.getElementById('summaryDetails').innerHTML = fraudTypeHtml;
+            } catch (error) {
+                console.error('Error loading summary:', error);
+            }
+        }
+
+        async function loadClaims() {
+            const limit = document.getElementById('claimLimit').value;
+            document.getElementById('claimsTable').innerHTML = '<div class="loading">Loading claims...</div>';
+            
+            try {
+                const response = await fetch(`/api/claims?limit=${limit}`);
+                const data = await response.json();
+                currentData.claims = data.claims;
+                
+                let html = `<p>Showing ${data.total} of ${data.total} claims</p><table>
+                    <tr>
+                        <th>Claim ID</th>
+                        <th>Provider ID</th>
+                        <th>CPT Code</th>
+                        <th>Amount</th>
+                        <th>Units</th>
+                        <th>Service Date</th>
+                        <th>Patient Age</th>
+                        <th>Status</th>
+                    </tr>`;
+                
+                data.claims.forEach(claim => {
+                    html += `
+                        <tr>
+                            <td>${claim.claim_id}</td>
+                            <td>${claim.provider_id}</td>
+                            <td>${claim.cpt_code}</td>
+                            <td>$${claim.claim_amount.toFixed(2)}</td>
+                            <td>${claim.units}</td>
+                            <td>${claim.service_date}</td>
+                            <td>${claim.patient_age}</td>
+                            <td><span class="badge ${claim.is_fraud ? 'badge-fraud' : 'badge-legit'}">
+                                ${claim.is_fraud ? 'FRAUD' : 'LEGITIMATE'}
+                            </span></td>
+                        </tr>`;
+                });
+                
+                html += '</table>';
+                document.getElementById('claimsTable').innerHTML = html;
+            } catch (error) {
+                document.getElementById('claimsTable').innerHTML = '<p>Error loading claims</p>';
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadProviders() {
+            document.getElementById('providersTable').innerHTML = '<div class="loading">Loading providers...</div>';
+            
+            try {
+                const response = await fetch('/api/providers?limit=200');
+                const data = await response.json();
+                currentData.providers = data;
+                
+                let html = `<p>Showing ${data.length} providers</p><table>
+                    <tr>
+                        <th>Provider ID</th>
+                        <th>Name</th>
+                        <th>Specialty</th>
+                        <th>State</th>
+                        <th>Tenure (Years)</th>
+                        <th>License</th>
+                        <th>Claims/Month</th>
+                        <th>Avg Amount</th>
+                        <th>Risk Flag</th>
+                    </tr>`;
+                
+                data.forEach(provider => {
+                    html += `
+                        <tr>
+                            <td>${provider.provider_id}</td>
+                            <td>${provider.provider_name}</td>
+                            <td>${provider.specialty}</td>
+                            <td>${provider.state}</td>
+                            <td>${provider.tenure_years}</td>
+                            <td><span class="badge ${provider.license_status === 'Active' ? 'badge-active' : 'badge-high'}">
+                                ${provider.license_status}
+                            </span></td>
+                            <td>${provider.claims_per_month}</td>
+                            <td>$${provider.avg_claim_amount.toFixed(2)}</td>
+                            <td><span class="badge ${provider.past_fraud_flags ? 'badge-suspicious' : 'badge-legit'}">
+                                ${provider.past_fraud_flags ? '⚠️ FLAGGED' : '✓ CLEAN'}
+                            </span></td>
+                        </tr>`;
+                });
+                
+                html += '</table>';
+                document.getElementById('providersTable').innerHTML = html;
+            } catch (error) {
+                document.getElementById('providersTable').innerHTML = '<p>Error loading providers</p>';
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadDecisions() {
+            const limit = document.getElementById('decisionLimit').value;
+            document.getElementById('decisionsTable').innerHTML = '<div class="loading">Loading decisions...</div>';
+            
+            try {
+                const response = await fetch(`/api/decisions?limit=${limit}`);
+                const data = await response.json();
+                currentData.decisions = data.decisions;
+                
+                let html = `<p>Showing ${data.total} recent decisions</p><table>
+                    <tr>
+                        <th>Decision ID</th>
+                        <th>Claim ID</th>
+                        <th>Provider</th>
+                        <th>Amount</th>
+                        <th>Risk Score</th>
+                        <th>Decision</th>
+                        <th>Fraud Prob</th>
+                        <th>Timestamp</th>
+                    </tr>`;
+                
+                data.decisions.forEach(decision => {
+                    const riskColor = decision.risk_score >= 75 ? 'badge-high' : 
+                                     decision.risk_score >= 50 ? 'badge-medium' : 'badge-low';
+                    
+                    html += `
+                        <tr>
+                            <td>${decision.decision_id}</td>
+                            <td>${decision.claim_id}</td>
+                            <td>${decision.provider_name || 'N/A'}</td>
+                            <td>$${decision.claim_amount ? decision.claim_amount.toFixed(2) : 'N/A'}</td>
+                            <td><span class="badge ${riskColor}">${decision.risk_score.toFixed(1)}</span></td>
+                            <td><strong>${decision.decision}</strong></td>
+                            <td>${decision.fraud_probability.toFixed(1)}%</td>
+                            <td>${new Date(decision.created_at).toLocaleString()}</td>
+                        </tr>`;
+                });
+                
+                html += '</table>';
+                document.getElementById('decisionsTable').innerHTML = html;
+            } catch (error) {
+                document.getElementById('decisionsTable').innerHTML = '<p>Error loading decisions</p>';
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadFraudClaims() {
+            document.getElementById('fraudTable').innerHTML = '<div class="loading">Loading fraud claims...</div>';
+            
+            try {
+                const response = await fetch('/api/claims?fraud_only=true&limit=1000');
+                const data = await response.json();
+                currentData.fraud = data.claims;
+                
+                let html = `<p>Found ${data.total} fraudulent claims</p><table>
+                    <tr>
+                        <th>Claim ID</th>
+                        <th>Provider ID</th>
+                        <th>CPT Code</th>
+                        <th>Amount</th>
+                        <th>Units</th>
+                        <th>Fraud Type</th>
+                        <th>Service Date</th>
+                        <th>Days to Submit</th>
+                    </tr>`;
+                
+                data.claims.forEach(claim => {
+                    html += `
+                        <tr>
+                            <td>${claim.claim_id}</td>
+                            <td>${claim.provider_id}</td>
+                            <td>${claim.cpt_code}</td>
+                            <td><strong>$${claim.claim_amount.toFixed(2)}</strong></td>
+                            <td>${claim.units}</td>
+                            <td><span class="badge badge-fraud" style="text-transform: capitalize;">${claim.fraud_type}</span></td>
+                            <td>${claim.service_date}</td>
+                            <td>${claim.days_to_submit}</td>
+                        </tr>`;
+                });
+                
+                html += '</table>';
+                document.getElementById('fraudTable').innerHTML = html;
+            } catch (error) {
+                document.getElementById('fraudTable').innerHTML = '<p>Error loading fraud claims</p>';
+                console.error('Error:', error);
+            }
+        }
+
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+            
+            // Show selected section
+            document.getElementById(section).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load data for section
+            if (section === 'claims') loadClaims();
+            else if (section === 'providers') loadProviders();
+            else if (section === 'decisions') loadDecisions();
+            else if (section === 'fraud') loadFraudClaims();
+        }
+
+        function exportTable(type) {
+            const data = currentData[type];
+            if (!data || data.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            const headers = Object.keys(data[0]);
+            let csv = headers.join(',') + '\n';
+            
+            data.forEach(row => {
+                csv += headers.map(header => {
+                    const value = row[header];
+                    return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
+                }).join(',') + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fraudshield_${type}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Initialize
+        loadSummary();
+    </script>
+</body>
+</html>

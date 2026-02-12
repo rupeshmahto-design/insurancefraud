@@ -1,0 +1,201 @@
+provider_id,provider_name,specialty,state,tenure_years,license_status,past_fraud_flags,avg_claim_amount,claims_per_month,is_suspicious_provider
+PRV01000,Dr. Johnson A.,Physical Therapy,FL,7,Active,0,70.32903601690666,94,False
+PRV01001,Dr. Brown B.,Orthopedics,NC,11,Active,0,571.2487648324918,169,False
+PRV01002,Dr. Johnson E.,Internal Medicine,CA,21,Active,0,180.48734607813066,77,False
+PRV01003,Dr. Smith A.,Dermatology,FL,22,Suspended,1,180.1405369644615,108,True
+PRV01004,Dr. Rodriguez E.,Cardiology,NC,17,Active,0,283.31183523471145,127,False
+PRV01005,Dr. Brown E.,Internal Medicine,FL,23,Active,0,134.80352470853842,154,False
+PRV01006,Dr. Davis E.,Physical Therapy,CA,21,Active,0,-54.007942359513834,109,False
+PRV01007,Dr. Williams D.,Chiropractic,IL,21,Active,0,417.9135417342756,191,False
+PRV01008,Dr. Williams B.,Chiropractic,TX,8,Suspended,1,215.58243192520652,123,True
+PRV01009,Dr. Johnson D.,Orthopedics,PA,4,Active,0,308.4023369884185,73,False
+PRV01010,Dr. Garcia E.,Physical Therapy,CA,18,Active,0,360.7699869993116,59,False
+PRV01011,Dr. Davis E.,Orthopedics,OH,21,Active,0,275.70524217849555,173,False
+PRV01012,Dr. Johnson E.,Physical Therapy,MI,13,Active,0,337.31841920695587,182,False
+PRV01013,Dr. Garcia E.,Dermatology,TX,3,Active,0,383.1622689390036,60,False
+PRV01014,Dr. Smith B.,Physical Therapy,TX,7,Active,0,470.34119281485886,56,False
+PRV01015,Dr. Brown A.,Internal Medicine,IL,3,Active,0,81.41524981899451,120,False
+PRV01016,Dr. Davis C.,General Practice,PA,15,Active,0,244.62609413350728,156,False
+PRV01017,Dr. Garcia B.,Physical Therapy,TX,15,Active,0,484.6965483721009,82,False
+PRV01018,Dr. Martinez B.,Oncology,FL,7,Active,0,294.64756727625206,162,False
+PRV01019,Dr. Williams D.,Internal Medicine,IL,11,Active,0,95.78263441186928,105,False
+PRV01020,Dr. Rodriguez B.,Chiropractic,CA,2,Active,0,27.63636297116301,103,False
+PRV01021,Dr. Brown A.,Chiropractic,OH,11,Active,0,215.67287256414758,148,False
+PRV01022,Dr. Jones A.,Dermatology,MI,20,Active,0,53.507396918128876,70,False
+PRV01023,Dr. Garcia B.,Neurology,OH,10,Active,0,691.5495124721926,115,False
+PRV01024,Dr. Davis B.,Physical Therapy,NY,24,Active,1,-37.81568229485623,132,False
+PRV01025,Dr. Brown E.,Oncology,IL,24,Suspended,1,246.02291868261747,132,True
+PRV01026,Dr. Martinez D.,Internal Medicine,PA,2,Active,0,221.14585528283163,149,False
+PRV01027,Dr. Brown B.,Oncology,GA,21,Active,0,295.2321013500419,87,False
+PRV01028,Dr. Johnson A.,Orthopedics,NY,23,Active,0,460.41914664041485,158,False
+PRV01029,Dr. Williams D.,Orthopedics,OH,16,Active,0,39.72234058115788,112,False
+PRV01030,Dr. Miller E.,Neurology,NC,3,Active,0,17.40048534008011,115,False
+PRV01031,Dr. Jones E.,Cardiology,TX,7,Active,0,260.2844462209041,101,False
+PRV01032,Dr. Rodriguez C.,Chiropractic,TX,8,Active,0,372.02758260545045,109,False
+PRV01033,Dr. Jones D.,General Practice,GA,16,Active,0,65.37035253490671,67,False
+PRV01034,Dr. Smith C.,Oncology,NY,12,Active,0,394.7215873492653,150,False
+PRV01035,Dr. Rodriguez A.,Physical Therapy,NC,20,Active,0,90.27532707054911,94,False
+PRV01036,Dr. Martinez B.,General Practice,PA,17,Active,0,276.2249517987207,73,False
+PRV01037,Dr. Williams E.,Oncology,CA,3,Active,0,67.47176614611413,52,False
+PRV01038,Dr. Martinez C.,Neurology,CA,14,Active,0,313.6729366084676,52,False
+PRV01039,Dr. Johnson C.,Physical Therapy,FL,16,Active,0,391.08033774430146,177,False
+PRV01040,Dr. Smith B.,Orthopedics,TX,6,Active,0,-40.45643149769006,116,False
+PRV01041,Dr. Davis A.,Oncology,NY,15,Active,0,122.89637078310345,166,False
+PRV01042,Dr. Williams D.,Oncology,NY,4,Suspended,1,89.36612529083317,177,True
+PRV01043,Dr. Jones E.,Internal Medicine,FL,14,Active,0,322.3708622864778,43,False
+PRV01044,Dr. Rodriguez B.,Physical Therapy,OH,17,Active,1,217.38145346439637,179,False
+PRV01045,Dr. Garcia D.,Oncology,GA,23,Active,0,178.71139773992866,73,False
+PRV01046,Dr. Johnson B.,Dermatology,TX,3,Active,0,408.61352632935643,36,False
+PRV01047,Dr. Garcia A.,Oncology,FL,8,Active,0,257.7041289219453,189,False
+PRV01048,Dr. Martinez B.,Cardiology,TX,23,Active,0,72.51015678183714,27,False
+PRV01049,Dr. Smith B.,Orthopedics,CA,14,Active,0,324.24934812875426,111,False
+PRV01050,Dr. Garcia A.,Oncology,FL,2,Active,0,597.1987850010263,144,False
+PRV01051,Dr. Jones D.,Dermatology,NC,22,Active,0,-30.089778888762226,89,False
+PRV01052,Dr. Williams E.,Neurology,FL,15,Active,0,142.70444361100476,24,False
+PRV01053,Dr. Davis D.,Dermatology,TX,7,Active,0,351.9396623402014,66,False
+PRV01054,Dr. Johnson D.,Chiropractic,OH,3,Active,1,-53.771387998641046,164,False
+PRV01055,Dr. Miller D.,Cardiology,TX,24,Active,0,277.96814721541415,136,False
+PRV01056,Dr. Smith D.,Chiropractic,TX,23,Active,0,232.67898851144008,115,False
+PRV01057,Dr. Brown B.,Dermatology,NC,22,Active,0,374.7562865463771,35,False
+PRV01058,Dr. Davis B.,Internal Medicine,NY,7,Active,0,262.9848721783832,198,False
+PRV01059,Dr. Jones D.,Dermatology,TX,5,Active,0,161.0675901309468,66,False
+PRV01060,Dr. Davis E.,Orthopedics,CA,17,Active,0,167.6120638953547,120,False
+PRV01061,Dr. Rodriguez A.,Orthopedics,FL,23,Suspended,1,414.51943816621053,88,True
+PRV01062,Dr. Williams D.,Neurology,GA,4,Suspended,1,466.19099335991734,115,True
+PRV01063,Dr. Brown D.,Cardiology,NY,1,Active,0,34.620677323084095,99,False
+PRV01064,Dr. Miller A.,Internal Medicine,IL,23,Active,0,341.1757810502207,182,False
+PRV01065,Dr. Davis C.,Internal Medicine,NC,1,Active,0,404.8769189241822,86,False
+PRV01066,Dr. Davis B.,Dermatology,IL,1,Active,0,177.03508509214592,27,False
+PRV01067,Dr. Brown A.,Oncology,CA,10,Suspended,1,281.139739192858,181,True
+PRV01068,Dr. Garcia A.,Cardiology,MI,19,Active,0,384.9399813149876,183,False
+PRV01069,Dr. Davis E.,Oncology,NY,21,Active,0,296.09492813149143,171,False
+PRV01070,Dr. Smith E.,Orthopedics,NY,3,Active,0,149.61959077281804,56,False
+PRV01071,Dr. Johnson E.,Orthopedics,FL,12,Active,0,424.29059766201624,124,False
+PRV01072,Dr. Miller A.,Dermatology,MI,17,Active,0,161.55207149692518,119,False
+PRV01073,Dr. Martinez A.,Orthopedics,OH,12,Active,0,205.25481652544389,47,False
+PRV01074,Dr. Martinez E.,Oncology,PA,14,Active,0,418.5312672537275,72,False
+PRV01075,Dr. Jones B.,Chiropractic,FL,23,Active,0,571.4807782170831,186,False
+PRV01076,Dr. Jones D.,General Practice,IL,14,Active,0,126.17542048112327,95,False
+PRV01077,Dr. Davis C.,Orthopedics,CA,9,Active,0,201.792123752051,26,False
+PRV01078,Dr. Davis E.,Orthopedics,TX,14,Active,0,179.34425415725158,184,False
+PRV01079,Dr. Rodriguez B.,Oncology,IL,6,Active,0,284.8074906036454,164,False
+PRV01080,Dr. Williams C.,Orthopedics,FL,7,Active,0,-55.56139024582086,109,False
+PRV01081,Dr. Garcia C.,General Practice,GA,19,Active,0,485.50484208140085,145,False
+PRV01082,Dr. Rodriguez C.,Oncology,CA,20,Active,0,327.90197713617584,132,False
+PRV01083,Dr. Rodriguez C.,Orthopedics,NY,24,Active,0,479.9108369503866,192,False
+PRV01084,Dr. Jones A.,Orthopedics,NC,13,Suspended,1,260.44789967783186,183,True
+PRV01085,Dr. Williams C.,Physical Therapy,MI,3,Active,0,397.52564595376975,68,False
+PRV01086,Dr. Brown C.,Dermatology,IL,14,Probation,0,465.513200882433,31,False
+PRV01087,Dr. Rodriguez D.,Physical Therapy,CA,10,Active,0,144.7450034488255,175,False
+PRV01088,Dr. Johnson D.,Physical Therapy,CA,21,Active,0,404.8900606026965,120,False
+PRV01089,Dr. Smith C.,General Practice,IL,9,Active,0,-21.51969874940238,180,False
+PRV01090,Dr. Williams D.,Oncology,OH,21,Active,0,51.96501894690368,75,False
+PRV01091,Dr. Rodriguez A.,Orthopedics,TX,18,Active,0,524.7188148781531,137,False
+PRV01092,Dr. Williams E.,Cardiology,PA,1,Active,0,157.6321232848433,78,False
+PRV01093,Dr. Martinez E.,General Practice,OH,17,Active,0,465.42752021166484,148,False
+PRV01094,Dr. Williams A.,Physical Therapy,PA,21,Active,0,477.4349984400844,184,False
+PRV01095,Dr. Smith C.,Dermatology,FL,10,Active,0,296.86877216469213,129,False
+PRV01096,Dr. Johnson C.,Oncology,OH,1,Active,0,409.06702211657023,111,False
+PRV01097,Dr. Martinez B.,Dermatology,NY,8,Suspended,1,481.20564953772737,181,True
+PRV01098,Dr. Williams D.,Cardiology,NY,22,Active,0,559.1121887322981,76,False
+PRV01099,Dr. Garcia D.,Dermatology,IL,17,Active,0,513.3011263664807,104,False
+PRV01100,Dr. Williams A.,Internal Medicine,CA,14,Active,0,-9.630965564835094,110,False
+PRV01101,Dr. Davis B.,Dermatology,GA,19,Active,0,466.65081879727165,98,False
+PRV01102,Dr. Garcia C.,Dermatology,FL,23,Active,0,431.82346498376523,36,False
+PRV01103,Dr. Smith B.,Internal Medicine,PA,20,Active,0,228.39260525882202,145,False
+PRV01104,Dr. Jones A.,Physical Therapy,PA,11,Active,0,601.2962803769493,137,False
+PRV01105,Dr. Rodriguez D.,Oncology,PA,16,Active,0,84.7217800027359,115,False
+PRV01106,Dr. Smith A.,Physical Therapy,NY,3,Active,0,342.4159981029624,111,False
+PRV01107,Dr. Martinez C.,Cardiology,TX,10,Active,0,170.69140217504435,31,False
+PRV01108,Dr. Martinez D.,Chiropractic,PA,14,Active,0,145.04117380111217,113,False
+PRV01109,Dr. Miller E.,Oncology,TX,11,Active,0,282.0969866101333,20,False
+PRV01110,Dr. Miller E.,Dermatology,IL,8,Active,0,208.7422454272534,47,False
+PRV01111,Dr. Smith D.,Cardiology,NC,23,Active,0,-95.28817471033773,75,False
+PRV01112,Dr. Rodriguez B.,Chiropractic,OH,19,Active,0,104.15971784138927,57,False
+PRV01113,Dr. Johnson C.,Chiropractic,TX,3,Active,0,261.92236777263076,47,False
+PRV01114,Dr. Jones E.,Physical Therapy,OH,10,Active,0,15.924112842599385,32,False
+PRV01115,Dr. Garcia D.,Physical Therapy,NC,20,Active,0,281.0034194501616,165,False
+PRV01116,Dr. Williams B.,Internal Medicine,OH,15,Active,0,471.9150891743237,61,False
+PRV01117,Dr. Williams E.,Physical Therapy,OH,9,Active,0,547.9204609340325,78,False
+PRV01118,Dr. Rodriguez A.,Physical Therapy,IL,13,Active,0,157.43643875696873,131,False
+PRV01119,Dr. Brown D.,Chiropractic,GA,4,Active,0,61.173693767170704,171,False
+PRV01120,Dr. Davis D.,Dermatology,NC,23,Active,0,276.0949493754355,94,False
+PRV01121,Dr. Davis B.,Orthopedics,IL,4,Suspended,1,386.18079208636414,137,True
+PRV01122,Dr. Rodriguez E.,Chiropractic,TX,17,Active,0,292.89702492824256,45,False
+PRV01123,Dr. Brown C.,Dermatology,FL,19,Active,0,517.4669253062585,87,False
+PRV01124,Dr. Williams A.,Cardiology,FL,19,Active,0,398.1239508551083,57,False
+PRV01125,Dr. Davis E.,Orthopedics,GA,5,Active,0,364.63065820028623,22,False
+PRV01126,Dr. Miller E.,Dermatology,OH,1,Active,0,39.96766734796964,187,False
+PRV01127,Dr. Davis D.,Dermatology,NY,2,Active,0,284.449369634971,28,False
+PRV01128,Dr. Smith A.,Internal Medicine,FL,11,Active,0,166.0387037907592,136,False
+PRV01129,Dr. Williams E.,Neurology,CA,24,Active,0,475.7537671991231,20,False
+PRV01130,Dr. Rodriguez B.,Orthopedics,GA,8,Active,0,329.78753383282685,79,False
+PRV01131,Dr. Williams D.,Oncology,NC,3,Active,0,354.45266899787305,173,False
+PRV01132,Dr. Martinez C.,Neurology,MI,4,Active,0,515.8566980466394,51,False
+PRV01133,Dr. Rodriguez D.,Oncology,GA,19,Active,0,190.24399147345773,172,False
+PRV01134,Dr. Williams D.,Neurology,IL,17,Active,0,285.3421837162849,198,False
+PRV01135,Dr. Brown C.,Oncology,GA,6,Active,0,365.62977908304504,34,False
+PRV01136,Dr. Brown C.,Neurology,TX,15,Active,0,176.89074641182785,116,False
+PRV01137,Dr. Jones B.,Physical Therapy,PA,5,Active,0,310.5730838018958,85,False
+PRV01138,Dr. Garcia E.,Orthopedics,NY,10,Active,0,-86.72043615609641,128,False
+PRV01139,Dr. Williams B.,Internal Medicine,NY,24,Active,0,351.3713095066121,176,False
+PRV01140,Dr. Brown A.,Internal Medicine,OH,15,Active,0,449.5657844903625,45,False
+PRV01141,Dr. Garcia E.,Neurology,OH,11,Active,0,549.8975809374706,123,False
+PRV01142,Dr. Smith B.,Internal Medicine,OH,6,Active,0,364.28784796534995,123,False
+PRV01143,Dr. Martinez A.,Internal Medicine,GA,18,Active,0,281.89836435745286,119,False
+PRV01144,Dr. Smith C.,Physical Therapy,OH,16,Active,0,287.5365898860473,141,False
+PRV01145,Dr. Miller E.,Oncology,MI,9,Active,0,79.03683577649409,30,False
+PRV01146,Dr. Brown D.,Dermatology,IL,23,Active,0,312.82591208027304,20,False
+PRV01147,Dr. Miller D.,Cardiology,OH,22,Active,0,191.60677124087607,72,False
+PRV01148,Dr. Garcia D.,General Practice,GA,9,Active,0,218.4974952437359,109,False
+PRV01149,Dr. Williams E.,Oncology,CA,11,Active,0,107.86903190711317,110,False
+PRV01150,Dr. Miller E.,Cardiology,TX,17,Active,0,320.7532157796761,199,False
+PRV01151,Dr. Miller B.,Neurology,NY,6,Suspended,1,20.535354524078826,180,True
+PRV01152,Dr. Smith C.,Internal Medicine,PA,17,Active,0,261.7613383759116,100,False
+PRV01153,Dr. Brown D.,Chiropractic,PA,20,Active,0,27.29476427243918,82,False
+PRV01154,Dr. Miller C.,Internal Medicine,IL,8,Active,0,132.61844421482797,81,False
+PRV01155,Dr. Johnson D.,Cardiology,NC,17,Suspended,1,351.1420703120163,49,True
+PRV01156,Dr. Smith C.,Dermatology,TX,16,Active,0,458.2873403560432,132,False
+PRV01157,Dr. Smith A.,Dermatology,FL,18,Active,0,-148.9027035574059,27,False
+PRV01158,Dr. Smith E.,General Practice,FL,23,Active,0,83.41362318012568,106,False
+PRV01159,Dr. Williams D.,Orthopedics,MI,23,Active,0,512.8405665135434,84,False
+PRV01160,Dr. Brown D.,Physical Therapy,PA,23,Active,0,-6.275491935276136,86,False
+PRV01161,Dr. Williams E.,Orthopedics,NY,19,Active,0,401.55175044123666,115,False
+PRV01162,Dr. Jones A.,Cardiology,IL,24,Active,0,496.95958640199603,161,False
+PRV01163,Dr. Martinez D.,Internal Medicine,FL,23,Active,0,98.93659535406084,170,False
+PRV01164,Dr. Johnson E.,Dermatology,TX,21,Suspended,1,298.9199533363177,101,True
+PRV01165,Dr. Jones E.,Orthopedics,MI,2,Active,0,62.33296354220457,149,False
+PRV01166,Dr. Smith C.,Oncology,OH,3,Active,0,437.00421047943803,72,False
+PRV01167,Dr. Garcia A.,Oncology,PA,12,Active,0,-75.48165305612878,100,False
+PRV01168,Dr. Smith D.,Neurology,TX,10,Active,0,240.3560969334253,33,False
+PRV01169,Dr. Miller C.,Neurology,NY,9,Active,0,48.594016224057384,41,False
+PRV01170,Dr. Miller B.,Oncology,IL,11,Active,0,415.4537900166674,89,False
+PRV01171,Dr. Martinez E.,Neurology,GA,18,Active,0,422.71380616970987,53,False
+PRV01172,Dr. Miller E.,Physical Therapy,PA,17,Active,0,115.18001376363037,187,False
+PRV01173,Dr. Brown A.,Physical Therapy,GA,2,Active,0,113.55491537650414,192,False
+PRV01174,Dr. Brown D.,Internal Medicine,PA,17,Active,0,197.79803705547417,55,False
+PRV01175,Dr. Smith D.,Chiropractic,NY,19,Active,0,279.7837544344438,183,False
+PRV01176,Dr. Davis B.,Chiropractic,IL,17,Active,0,327.9808339524975,169,False
+PRV01177,Dr. Garcia C.,Physical Therapy,NC,5,Active,0,232.25148659785143,100,False
+PRV01178,Dr. Smith E.,Dermatology,TX,13,Active,0,59.79677325353978,148,False
+PRV01179,Dr. Brown D.,Neurology,NC,11,Active,0,50.628125925772565,127,False
+PRV01180,Dr. Brown D.,Neurology,GA,12,Active,0,397.85840752353454,68,False
+PRV01181,Dr. Smith A.,Physical Therapy,FL,17,Active,0,160.8303177792667,81,False
+PRV01182,Dr. Miller B.,Physical Therapy,MI,16,Active,0,442.9402920106902,44,False
+PRV01183,Dr. Garcia D.,Oncology,NC,18,Active,1,409.33147763705676,128,False
+PRV01184,Dr. Garcia D.,Oncology,PA,15,Suspended,1,62.350550352722934,154,True
+PRV01185,Dr. Garcia D.,Physical Therapy,IL,14,Active,0,640.8966200439278,91,False
+PRV01186,Dr. Jones B.,Orthopedics,FL,18,Active,0,239.96855132840997,122,False
+PRV01187,Dr. Garcia A.,Oncology,NY,17,Active,0,150.45610729268844,64,False
+PRV01188,Dr. Brown B.,Neurology,IL,2,Active,0,466.62596178234526,139,False
+PRV01189,Dr. Martinez E.,Physical Therapy,TX,17,Active,0,-35.67681077977568,180,False
+PRV01190,Dr. Brown C.,Dermatology,PA,16,Active,0,288.4242187650737,32,False
+PRV01191,Dr. Williams C.,Cardiology,NC,13,Active,0,247.01775845667024,65,False
+PRV01192,Dr. Williams C.,Cardiology,CA,20,Active,0,639.6556964851576,140,False
+PRV01193,Dr. Rodriguez C.,General Practice,GA,10,Active,0,152.44435838949596,84,False
+PRV01194,Dr. Johnson A.,Physical Therapy,GA,17,Active,0,99.37888498718982,172,False
+PRV01195,Dr. Davis D.,Chiropractic,NY,16,Suspended,1,134.83036523438074,92,True
+PRV01196,Dr. Smith C.,Neurology,TX,15,Active,0,225.14154202800773,82,False
+PRV01197,Dr. Johnson D.,Neurology,TX,14,Active,1,126.16227354738086,71,False
+PRV01198,Dr. Martinez A.,General Practice,NY,4,Active,0,293.37529658617274,93,False
+PRV01199,Dr. Martinez C.,Orthopedics,FL,11,Active,0,618.2950209866342,22,False
