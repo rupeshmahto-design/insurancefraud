@@ -9,7 +9,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from urllib.parse import urlparse
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='Static')
 CORS(app)
 
 # Database configuration - supports both SQLite (local) and PostgreSQL (Railway)
@@ -573,19 +573,19 @@ def engineer_single_claim(claim_data, provider_data):
 
 @app.route('/')
 def index():
-    return send_from_directory('static', 'index.html')
+    return send_from_directory('Static', 'index.html')
 
 @app.route('/database.html')
 def database():
-    return send_from_directory('static', 'database.html')
+    return send_from_directory('Static', 'database.html')
 
 @app.route('/demo.html')
 def demo():
-    return send_from_directory('static', 'demo.html')
+    return send_from_directory('Static', 'demo.html')
 
 @app.route('/executive.html')
 def executive():
-    return send_from_directory('static', 'executive.html')
+    return send_from_directory('Static', 'executive.html')
 
 @app.route('/api/providers', methods=['GET'])
 def get_providers():
