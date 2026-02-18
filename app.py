@@ -46,7 +46,7 @@ except Exception as e:
 
 # CPT code reference
 CPT_CODES = {
-    '00215': {'base': 150, 'max': 250, 'category': 'visit'},
+    '00215': {'base': 200, 'max': 600, 'category': 'visit'},
     '99213': {'base': 120, 'max': 200, 'category': 'visit'},
     '99214': {'base': 180, 'max': 300, 'category': 'visit'},
     '99215': {'base': 250, 'max': 400, 'category': 'visit'},

@@ -32,7 +32,7 @@ def generate_synthetic_healthcare_data(n_records=5000, fraud_rate=0.08):
     states = ['CA', 'TX', 'NY', 'FL', 'IL', 'PA', 'OH', 'GA', 'NC', 'MI']
     
     cpt_codes = {
-        '00215': {'desc': 'Office visit, level 2-3', 'base_fee': 150, 'max_fee': 250, 'category': 'visit'},
+        '00215': {'desc': 'Office visit, level 2-3', 'base_fee': 200, 'max_fee': 600, 'category': 'visit'},
         '99213': {'desc': 'Office visit, level 3', 'base_fee': 120, 'max_fee': 200, 'category': 'visit'},
         '99214': {'desc': 'Office visit, level 4', 'base_fee': 180, 'max_fee': 300, 'category': 'visit'},
         '99215': {'desc': 'Office visit, level 5', 'base_fee': 250, 'max_fee': 400, 'category': 'visit'},
@@ -189,7 +189,7 @@ def engineer_features(df, is_training=True, scaler=None, feature_cols=None):
     df['amount_zscore'] = df['amount_zscore'].fillna(0)
     
     cpt_max_map = {
-        '00215': 250, '99213': 200, '99214': 300, '99215': 400, '36415': 25,
+        '00215': 600, '99213': 200, '99214': 300, '99215': 400, '36415': 25,
         '80053': 75, '71020': 150, '93000': 110, '97110': 160,
         '20610': 350, '11042': 550, '93306': 700, '99285': 1200
     }
