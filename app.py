@@ -642,7 +642,13 @@ def executive():
 def get_providers():
     try:
         conn = get_db_connection()
-        providers = conn.execute('SELECT * FROM providers LIMIT 50').fetchall()
+        if USE_POSTGRES:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM providers LIMIT 50')
+            providers = cursor.fetchall()
+            cursor.close()
+        else:
+            providers = conn.execute('SELECT * FROM providers LIMIT 50').fetchall()
         conn.close()
         return jsonify([dict(row) for row in providers])
     except Exception as e:
@@ -655,10 +661,19 @@ def analyze_claim():
         
         # Get provider info
         conn = get_db_connection()
-        provider = conn.execute(
-            'SELECT * FROM providers WHERE provider_id = ?', 
-            (data['provider_id'],)
-        ).fetchone()
+        if USE_POSTGRES:
+            cursor = conn.cursor()
+            cursor.execute(
+                'SELECT * FROM providers WHERE provider_id = %s', 
+                (data['provider_id'],)
+            )
+            provider = cursor.fetchone()
+            cursor.close()
+        else:
+            provider = conn.execute(
+                'SELECT * FROM providers WHERE provider_id = ?', 
+                (data['provider_id'],)
+            ).fetchone()
         conn.close()
         
         if not provider:
@@ -774,12 +789,22 @@ def analyze_claim():
         # Save to database
         try:
             conn = get_db_connection()
-            conn.execute('''
-                INSERT INTO claim_decisions 
-                (claim_id, risk_score, decision, fraud_probability, anomaly_score, rule_violations, model_version)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (result['claim_id'], final_score, decision, fraud_prob, anomaly_risk, 
-                  json.dumps(violations), 'RF_v1.0'))
+            if USE_POSTGRES:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    INSERT INTO claim_decisions 
+                    (claim_id, risk_score, decision, fraud_probability, anomaly_score, rule_violations, model_version)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ''', (result['claim_id'], final_score, decision, fraud_prob, anomaly_risk, 
+                      json.dumps(violations), 'RF_v1.0'))
+                cursor.close()
+            else:
+                conn.execute('''
+                    INSERT INTO claim_decisions 
+                    (claim_id, risk_score, decision, fraud_probability, anomaly_score, rule_violations, model_version)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (result['claim_id'], final_score, decision, fraud_prob, anomaly_risk, 
+                      json.dumps(violations), 'RF_v1.0'))
             conn.commit()
             conn.close()
         except Exception as e:
@@ -796,11 +821,21 @@ def get_stats():
         conn = get_db_connection()
         
         # Decision distribution
-        decisions = conn.execute('''
-            SELECT decision, COUNT(*) as count 
-            FROM claim_decisions 
-            GROUP BY decision
-        ''').fetchall()
+        if USE_POSTGRES:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT decision, COUNT(*) as count 
+                FROM claim_decisions 
+                GROUP BY decision
+            ''')
+            decisions = cursor.fetchall()
+            cursor.close()
+        else:
+            decisions = conn.execute('''
+                SELECT decision, COUNT(*) as count 
+                FROM claim_decisions 
+                GROUP BY decision
+            ''').fetchall()
         
         conn.close()
         
@@ -819,12 +854,21 @@ def get_claims():
         
         conn = get_db_connection()
         
-        if fraud_only:
-            query = 'SELECT * FROM claims WHERE is_fraud = 1 LIMIT ?'
+        if USE_POSTGRES:
+            cursor = conn.cursor()
+            if fraud_only:
+                query = 'SELECT * FROM claims WHERE is_fraud = 1 LIMIT %s'
+            else:
+                query = 'SELECT * FROM claims LIMIT %s'
+            cursor.execute(query, (limit,))
+            claims = cursor.fetchall()
+            cursor.close()
         else:
-            query = 'SELECT * FROM claims LIMIT ?'
-        
-        claims = conn.execute(query, (limit,)).fetchall()
+            if fraud_only:
+                query = 'SELECT * FROM claims WHERE is_fraud = 1 LIMIT ?'
+            else:
+                query = 'SELECT * FROM claims LIMIT ?'
+            claims = conn.execute(query, (limit,)).fetchall()
         conn.close()
         
         return jsonify({
@@ -841,14 +885,27 @@ def get_decisions():
         limit = request.args.get('limit', 50, type=int)
         
         conn = get_db_connection()
-        decisions = conn.execute('''
-            SELECT d.*, c.cpt_code, c.claim_amount, p.provider_name, p.specialty
-            FROM claim_decisions d
-            LEFT JOIN claims c ON d.claim_id = c.claim_id
-            LEFT JOIN providers p ON c.provider_id = p.provider_id
-            ORDER BY d.created_at DESC
-            LIMIT ?
-        ''', (limit,)).fetchall()
+        if USE_POSTGRES:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT d.*, c.cpt_code, c.claim_amount, p.provider_name, p.specialty
+                FROM claim_decisions d
+                LEFT JOIN claims c ON d.claim_id = c.claim_id
+                LEFT JOIN providers p ON c.provider_id = p.provider_id
+                ORDER BY d.timestamp DESC
+                LIMIT %s
+            ''', (limit,))
+            decisions = cursor.fetchall()
+            cursor.close()
+        else:
+            decisions = conn.execute('''
+                SELECT d.*, c.cpt_code, c.claim_amount, p.provider_name, p.specialty
+                FROM claim_decisions d
+                LEFT JOIN claims c ON d.claim_id = c.claim_id
+                LEFT JOIN providers p ON c.provider_id = p.provider_id
+                ORDER BY d.timestamp DESC
+                LIMIT ?
+            ''', (limit,)).fetchall()
         conn.close()
         
         return jsonify({
@@ -864,21 +921,44 @@ def get_database_summary():
     try:
         conn = get_db_connection()
         
-        total_claims = conn.execute('SELECT COUNT(*) as count FROM claims').fetchone()['count']
-        fraud_claims = conn.execute('SELECT COUNT(*) as count FROM claims WHERE is_fraud = 1').fetchone()['count']
-        total_providers = conn.execute('SELECT COUNT(*) as count FROM providers').fetchone()['count']
-        suspicious_providers = conn.execute('SELECT COUNT(*) as count FROM providers WHERE past_fraud_flags = 1').fetchone()['count']
-        total_decisions = conn.execute('SELECT COUNT(*) as count FROM claim_decisions').fetchone()['count']
-        
-        avg_claim = conn.execute('SELECT AVG(claim_amount) as avg FROM claims').fetchone()['avg']
-        avg_fraud = conn.execute('SELECT AVG(claim_amount) as avg FROM claims WHERE is_fraud = 1').fetchone()['avg']
-        
-        fraud_by_type = conn.execute('''
-            SELECT fraud_type, COUNT(*) as count 
-            FROM claims 
-            WHERE is_fraud = 1 
-            GROUP BY fraud_type
-        ''').fetchall()
+        if USE_POSTGRES:
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) as count FROM claims')
+            total_claims = cursor.fetchone()['count']
+            cursor.execute('SELECT COUNT(*) as count FROM claims WHERE is_fraud = 1')
+            fraud_claims = cursor.fetchone()['count']
+            cursor.execute('SELECT COUNT(*) as count FROM providers')
+            total_providers = cursor.fetchone()['count']
+            cursor.execute('SELECT COUNT(*) as count FROM providers WHERE past_fraud_flags = 1')
+            suspicious_providers = cursor.fetchone()['count']
+            cursor.execute('SELECT COUNT(*) as count FROM claim_decisions')
+            total_decisions = cursor.fetchone()['count']
+            cursor.execute('SELECT AVG(claim_amount) as avg FROM claims')
+            avg_claim = cursor.fetchone()['avg']
+            cursor.execute('SELECT AVG(claim_amount) as avg FROM claims WHERE is_fraud = 1')
+            avg_fraud = cursor.fetchone()['avg']
+            cursor.execute('''
+                SELECT fraud_type, COUNT(*) as count 
+                FROM claims 
+                WHERE is_fraud = 1 
+                GROUP BY fraud_type
+            ''')
+            fraud_by_type = cursor.fetchall()
+            cursor.close()
+        else:
+            total_claims = conn.execute('SELECT COUNT(*) as count FROM claims').fetchone()['count']
+            fraud_claims = conn.execute('SELECT COUNT(*) as count FROM claims WHERE is_fraud = 1').fetchone()['count']
+            total_providers = conn.execute('SELECT COUNT(*) as count FROM providers').fetchone()['count']
+            suspicious_providers = conn.execute('SELECT COUNT(*) as count FROM providers WHERE past_fraud_flags = 1').fetchone()['count']
+            total_decisions = conn.execute('SELECT COUNT(*) as count FROM claim_decisions').fetchone()['count']
+            avg_claim = conn.execute('SELECT AVG(claim_amount) as avg FROM claims').fetchone()['avg']
+            avg_fraud = conn.execute('SELECT AVG(claim_amount) as avg FROM claims WHERE is_fraud = 1').fetchone()['avg']
+            fraud_by_type = conn.execute('''
+                SELECT fraud_type, COUNT(*) as count 
+                FROM claims 
+                WHERE is_fraud = 1 
+                GROUP BY fraud_type
+            ''').fetchall()
         
         conn.close()
         
