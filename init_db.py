@@ -57,35 +57,34 @@ def init_postgres_db():
         pg_conn.commit()
         print("✅ Tables created")
         
-        # Check if providers table is empty
-        pg_cursor.execute("SELECT COUNT(*) FROM providers")
-        count = pg_cursor.fetchone()[0]
+        # Always sync providers from SQLite to ensure latest data
+        print("📥 Syncing providers from SQLite...")
+        # Connect to SQLite
+        sqlite_conn = sqlite3.connect('data/fraud_detection.db')
+        sqlite_cursor = sqlite_conn.cursor()
         
-        if count == 0:
-            print("📥 Loading data from SQLite...")
-            # Connect to SQLite
-            sqlite_conn = sqlite3.connect('data/fraud_detection.db')
-            sqlite_cursor = sqlite_conn.cursor()
+        # Get all providers from SQLite
+        sqlite_cursor.execute("SELECT * FROM providers")
+        providers = sqlite_cursor.fetchall()
+        
+        if providers:
+            # Clear existing providers and reload (ensures updates)
+            pg_cursor.execute("DELETE FROM providers")
             
-            # Copy providers
-            sqlite_cursor.execute("SELECT * FROM providers")
-            providers = sqlite_cursor.fetchall()
-            
-            if providers:
-                execute_values(
-                    pg_cursor,
-                    """INSERT INTO providers 
-                       (provider_id, provider_name, specialty, license_status, 
-                        tenure_years, claims_per_month, avg_claim_amount, past_fraud_flags)
-                       VALUES %s""",
-                    providers
-                )
-                pg_conn.commit()
-                print(f"✅ Loaded {len(providers)} providers")
-            
-            sqlite_conn.close()
+            execute_values(
+                pg_cursor,
+                """INSERT INTO providers 
+                   (provider_id, provider_name, specialty, license_status, 
+                    tenure_years, claims_per_month, avg_claim_amount, past_fraud_flags)
+                   VALUES %s""",
+                providers
+            )
+            pg_conn.commit()
+            print(f"✅ Synced {len(providers)} providers")
         else:
-            print(f"✅ Database already has {count} providers")
+            print("⚠️  No providers found in SQLite")
+        
+        sqlite_conn.close()
         
         pg_cursor.close()
         pg_conn.close()
