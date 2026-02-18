@@ -199,3 +199,6 @@ PRV01196,Dr. Smith C.,Neurology,TX,15,Active,0,225.14154202800773,82,False
 PRV01197,Dr. Johnson D.,Neurology,TX,14,Active,1,126.16227354738086,71,False
 PRV01198,Dr. Martinez A.,General Practice,NY,4,Active,0,293.37529658617274,93,False
 PRV01199,Dr. Martinez C.,Orthopedics,FL,11,Active,0,618.2950209866342,22,False
+PRV73001,Dr Michael Tan,Specialist Physician,CA,8,Active,1,850.50,45,True
+PRV74001,Dr Michael Chen,General Practitioner,CA,12,Active,0,285.30,120,False
+PRV76001,Dr Leonid Sten,Dental Surgeon,CA,15,Active,0,420.00,80,False

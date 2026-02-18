@@ -46,6 +46,7 @@ except Exception as e:
 
 # CPT code reference
 CPT_CODES = {
+    '00215': {'base': 150, 'max': 250, 'category': 'visit'},
     '99213': {'base': 120, 'max': 200, 'category': 'visit'},
     '99214': {'base': 180, 'max': 300, 'category': 'visit'},
     '99215': {'base': 250, 'max': 400, 'category': 'visit'},
@@ -299,15 +300,28 @@ def identify_anomaly_factors(claim_data, provider_data, features_scaled):
     # High total claim value (amount x units)
     total_value = claim_data['claim_amount'] * claim_data['units']
     if total_value > 3000:
-        anomaly_factors.append(f"Very high total claim value (${total_value:.2f})")
+        anomaly_factors.append(f"💵 Very high total claim value (${total_value:.2f}) - exceeds 95th percentile of normal claims")
         anomaly_points += 15
     
     if not anomaly_factors:
-        anomaly_factors.append("Claim parameters all within normal ranges")
+        anomaly_factors.append("✅ Claim parameters all within normal ranges - no statistical anomalies detected")
         anomaly_points = 5  # Baseline
+    else:
+        # Add contextual summary
+        anomaly_factors.insert(0, f"🔍 ANOMALY ANALYSIS: Detected {len(anomaly_factors)} statistical deviation(s) from normal claim patterns")
     
     # Calculate dynamic anomaly score (0-100)
     dynamic_anomaly_score = min(100, anomaly_points)
+    
+    # Add scoring explanation
+    if dynamic_anomaly_score > 70:
+        anomaly_factors.append(f"📊 ANOMALY SCORE: {dynamic_anomaly_score}/100 - SEVERE deviation from typical claims")
+    elif dynamic_anomaly_score > 50:
+        anomaly_factors.append(f"📊 ANOMALY SCORE: {dynamic_anomaly_score}/100 - MODERATE deviation requiring review")
+    elif dynamic_anomaly_score > 30:
+        anomaly_factors.append(f"📊 ANOMALY SCORE: {dynamic_anomaly_score}/100 - MINOR deviation, within acceptable range")
+    else:
+        anomaly_factors.append(f"📊 ANOMALY SCORE: {dynamic_anomaly_score}/100 - Normal variation")
     
     return anomaly_factors, dynamic_anomaly_score
 
@@ -323,71 +337,71 @@ def identify_fraud_factors(claim_data, provider_data, fraud_prob):
     
     # Provider risk factors (highest weight)
     if provider_data['past_fraud_flags'] == 1:
-        fraud_factors.append("🚩 Provider has documented fraud history (CRITICAL RISK)")
+        fraud_factors.append("🚩 Provider has documented fraud history [+25 risk points] (CRITICAL RISK)")
         risk_indicators.append("provider_history")
         dynamic_fraud_boost += 25
     
     # Amount analysis (granular)
     amount_ratio = claim_data['claim_amount'] / cpt_info['max']
     if amount_ratio > 1.5:
-        fraud_factors.append(f"💰 Charge (${claim_data['claim_amount']}) is 150%+ of typical max (${cpt_info['max']}) - EXTREME")
+        fraud_factors.append(f"💰 Charge (${claim_data['claim_amount']}) is 150%+ of typical max (${cpt_info['max']}) [+20 risk points] - EXTREME")
         risk_indicators.append("extreme_amount")
         dynamic_fraud_boost += 20
     elif amount_ratio > 1.2:
-        fraud_factors.append(f"💰 Charge (${claim_data['claim_amount']}) exceeds typical maximum (${cpt_info['max']}) by 20%+")
+        fraud_factors.append(f"💰 Charge (${claim_data['claim_amount']}) exceeds typical maximum (${cpt_info['max']}) by 20%+ [+15 risk points]")
         risk_indicators.append("excessive_amount")
         dynamic_fraud_boost += 15
     elif amount_ratio > 1.0:
-        fraud_factors.append(f"💰 Charge (${claim_data['claim_amount']}) exceeds typical maximum (${cpt_info['max']})")
+        fraud_factors.append(f"💰 Charge (${claim_data['claim_amount']}) exceeds typical maximum (${cpt_info['max']}) [+10 risk points]")
         risk_indicators.append("high_amount")
         dynamic_fraud_boost += 10
     elif amount_ratio > 0.85:
-        fraud_factors.append(f"⚠️ Charge is at {int(amount_ratio*100)}% of typical maximum (borderline high)")
+        fraud_factors.append(f"⚠️ Charge is at {int(amount_ratio*100)}% of typical maximum [+5 risk points] (borderline high)")
         risk_indicators.append("borderline_amount")
         dynamic_fraud_boost += 5
     
     # Units analysis (detailed tiers)
     units = claim_data['units']
     if units > 10:
-        fraud_factors.append(f"📊 EXTREME units ({units}) - very strong indicator of unbundling/phantom billing")
+        fraud_factors.append(f"📊 EXTREME units ({units}) [+25 risk points] - very strong indicator of unbundling/phantom billing")
         risk_indicators.append("extreme_units")
         dynamic_fraud_boost += 25
     elif units > 7:
-        fraud_factors.append(f"📊 Very high units ({units}) - likely unbundling or phantom billing")
+        fraud_factors.append(f"📊 Very high units ({units}) [+18 risk points] - likely unbundling or phantom billing")
         risk_indicators.append("very_high_units")
         dynamic_fraud_boost += 18
     elif units > 5:
-        fraud_factors.append(f"📊 Very high units ({units}) - possible unbundling or phantom billing")
+        fraud_factors.append(f"📊 Very high units ({units}) [+15 risk points] - possible unbundling or phantom billing")
         risk_indicators.append("high_units_severe")
         dynamic_fraud_boost += 15
     elif units > 3:
-        fraud_factors.append(f"📊 High units ({units}) - above typical range (1-2)")
+        fraud_factors.append(f"📊 High units ({units}) [+10 risk points] - above typical range (1-2)")
         risk_indicators.append("high_units")
         dynamic_fraud_boost += 10
     elif units > 2:
-        fraud_factors.append(f"📊 Elevated units ({units}) - slightly above normal")
+        fraud_factors.append(f"📊 Elevated units ({units}) [+5 risk points] - slightly above normal")
         dynamic_fraud_boost += 5
     
     # Submission timing (comprehensive)
     days = claim_data['days_to_submit']
     if days > 60:
-        fraud_factors.append(f"⏰ VERY late submission ({days} days) - strong backdating red flag")
+        fraud_factors.append(f"⏰ VERY late submission ({days} days) [+20 risk points] - strong backdating red flag")
         risk_indicators.append("very_late")
         dynamic_fraud_boost += 20
     elif days > 40:
-        fraud_factors.append(f"⏰ Severely late submission ({days} days) - possible backdating")
+        fraud_factors.append(f"⏰ Severely late submission ({days} days) [+15 risk points] - possible backdating")
         risk_indicators.append("severe_late")
         dynamic_fraud_boost += 15
     elif days > 30:
-        fraud_factors.append(f"⏰ Very late submission ({days} days) - red flag for backdating")
+        fraud_factors.append(f"⏰ Very late submission ({days} days) [+12 risk points] - red flag for backdating")
         risk_indicators.append("very_late")
         dynamic_fraud_boost += 12
     elif days > 20:
-        fraud_factors.append(f"⏰ Late submission ({days} days) - suspicious timing")
+        fraud_factors.append(f"⏰ Late submission ({days} days) [+8 risk points] - suspicious timing")
         risk_indicators.append("late")
         dynamic_fraud_boost += 8
     elif days == 0:
-        fraud_factors.append("⏰ Same-day submission - unusual pattern")
+        fraud_factors.append("⏰ Same-day submission [+8 risk points] - unusual pattern")
         risk_indicators.append("same_day")
         dynamic_fraud_boost += 8
     
@@ -395,74 +409,74 @@ def identify_fraud_factors(claim_data, provider_data, fraud_prob):
     
     # Pattern 1: Upcoding + Provider History
     if amount_ratio > 1.2 and provider_data['past_fraud_flags'] == 1:
-        fraud_factors.append("🚨 FRAUD PATTERN: Upcoding by provider with fraud history (deliberate repeat offender)")
+        fraud_factors.append("🚨 FRAUD PATTERN: Upcoding by provider with fraud history [+30 risk points] (deliberate repeat offender)")
         dynamic_fraud_boost += 30
         risk_indicators.append("repeat_upcoder")
     
     # Pattern 2: Unbundling + High Volume
     if units > 5 and provider_data['claims_per_month'] > 250:
-        fraud_factors.append("🚨 FRAUD PATTERN: High unbundling volume by high-claim provider (systematic scheme)")
+        fraud_factors.append("🚨 FRAUD PATTERN: High unbundling volume by high-claim provider [+25 risk points] (systematic scheme)")
         dynamic_fraud_boost += 25
         risk_indicators.append("systematic_unbundling")
     
     # Pattern 3: Backdating + Geographic mismatch
     if days > 30 and claim_data.get('geo_mismatch', 0) == 1:
-        fraud_factors.append("🚨 FRAUD PATTERN: Late submission + out-of-state patient (possible phantom billing)")
+        fraud_factors.append("🚨 FRAUD PATTERN: Late submission + out-of-state patient [+22 risk points] (possible phantom billing)")
         dynamic_fraud_boost += 22
         risk_indicators.append("phantom_pattern")
     
     # Pattern 4: Weekend + High Amount + Multiple Units
     if service_date.weekday() >= 5 and amount_ratio > 1.0 and units > 2:
-        fraud_factors.append("🚨 FRAUD PATTERN: Weekend service + high charges + multiple units (suspicious combination)")
+        fraud_factors.append("🚨 FRAUD PATTERN: Weekend service + high charges + multiple units [+20 risk points] (suspicious combination)")
         dynamic_fraud_boost += 20
         risk_indicators.append("weekend_abuse")
     
     # Pattern 5: Young/Old patient + very high cost
     age = claim_data['patient_age']
     if (age < 10 or age > 85) and claim_data['claim_amount'] > 500:
-        fraud_factors.append(f"🚨 FRAUD PATTERN: Extreme age ({age}) + high cost (${claim_data['claim_amount']}) - possible phantom patient")
+        fraud_factors.append(f"🚨 FRAUD PATTERN: Extreme age ({age}) + high cost (${claim_data['claim_amount']}) [+18 risk points] - possible phantom patient")
         dynamic_fraud_boost += 18
         risk_indicators.append("age_mismatch_fraud")
     
     # Geographic mismatch (fraud intent indicator)
     if claim_data.get('geo_mismatch', 0) == 1:
-        fraud_factors.append("🌍 Patient location doesn't match provider location")
+        fraud_factors.append("🌍 Patient location doesn't match provider location [+10 risk points]")
         risk_indicators.append("geo_mismatch")
         dynamic_fraud_boost += 10
     
     # License status
     if provider_data['license_status'] != 'Active':
-        fraud_factors.append(f"⚕️ Provider license status: {provider_data['license_status']} (NOT ACTIVE)")
+        fraud_factors.append(f"⚕️ Provider license status: {provider_data['license_status']} [+18 risk points] (NOT ACTIVE)")
         risk_indicators.append("license_issue")
         dynamic_fraud_boost += 18
     
     # Provider tenure
     if provider_data['tenure_years'] < 1:
-        fraud_factors.append("🆕 New provider (less than 1 year) - higher risk category")
+        fraud_factors.append("🆕 New provider (less than 1 year) [+8 risk points] - higher risk category")
         risk_indicators.append("new_provider")
         dynamic_fraud_boost += 8
     elif provider_data['tenure_years'] < 2:
-        fraud_factors.append("🆕 Recently established provider (< 2 years)")
+        fraud_factors.append("🆕 Recently established provider (< 2 years) [+4 risk points]")
         dynamic_fraud_boost += 4
     
     # High-risk combinations
     total_value = claim_data['claim_amount'] * units
     if total_value > 5000:
-        fraud_factors.append(f"💸 VERY HIGH total claim value (${total_value:.2f})")
+        fraud_factors.append(f"💸 VERY HIGH total claim value (${total_value:.2f}) [+18 risk points]")
         risk_indicators.append("extreme_total")
         dynamic_fraud_boost += 18
     elif total_value > 3000:
-        fraud_factors.append(f"💸 High total claim value (${total_value:.2f})")
+        fraud_factors.append(f"💸 High total claim value (${total_value:.2f}) [+12 risk points]")
         risk_indicators.append("high_total")
         dynamic_fraud_boost += 12
     elif total_value > 2000:
-        fraud_factors.append(f"💸 Elevated total claim value (${total_value:.2f})")
+        fraud_factors.append(f"💸 Elevated total claim value (${total_value:.2f}) [+6 risk points]")
         dynamic_fraud_boost += 6
     
     # Patient age analysis
     age = claim_data['patient_age']
     if age < 5 and claim_data['claim_amount'] > 500:
-        fraud_factors.append(f"👶 Very young patient (age {age}) with high-cost procedure (${claim_data['claim_amount']})")
+        fraud_factors.append(f"👶 Very young patient (age {age}) with high-cost procedure (${claim_data['claim_amount']}) [+10 risk points]")
         risk_indicators.append("age_amount_mismatch")
         dynamic_fraud_boost += 10
     elif age > 95:
@@ -487,33 +501,65 @@ def identify_fraud_factors(claim_data, provider_data, fraud_prob):
     # Adjust fraud probability with dynamic factors
     adjusted_fraud_prob = min(100, fraud_prob + (dynamic_fraud_boost * 0.5))
     
-    # ML model interpretation based on adjusted score
+    # ML model interpretation based on adjusted score with detailed explanations
     if adjusted_fraud_prob > 80:
-        confidence_msg = f"🤖 ML model has VERY HIGH confidence ({adjusted_fraud_prob:.1f}%) - matches known fraud patterns"
+        confidence_msg = f"🤖 ML Model: VERY HIGH fraud confidence ({adjusted_fraud_prob:.1f}%)"
+        interpretation = "📊 INTERPRETATION: This claim strongly matches patterns seen in confirmed fraud cases. The ML model has analyzed similar claims and found significant similarities."
+        recommendation = "🎯 RECOMMENDATION: Immediate investigation required. High probability of intentional fraud."
     elif adjusted_fraud_prob > 60:
-        confidence_msg = f"🤖 ML model detects STRONG fraud indicators ({adjusted_fraud_prob:.1f}% confidence)"
+        confidence_msg = f"🤖 ML Model: STRONG fraud indicators ({adjusted_fraud_prob:.1f}%)"
+        interpretation = "📊 INTERPRETATION: Multiple red flags detected. The claim exhibits several characteristics commonly associated with fraudulent activity."
+        recommendation = "🎯 RECOMMENDATION: Requires detailed investigation. Consider pattern analysis across provider's claim history."
     elif adjusted_fraud_prob > 40:
-        confidence_msg = f"🤖 ML model detects MODERATE fraud indicators ({adjusted_fraud_prob:.1f}% confidence)"
+        confidence_msg = f"🤖 ML Model: MODERATE fraud indicators ({adjusted_fraud_prob:.1f}%)"
+        interpretation = f"📊 INTERPRETATION: The claim shows some concerning patterns. While not definitively fraudulent, it deviates from normal behavior enough to warrant attention. Key factors contributing: {len(risk_indicators)} risk indicator(s) detected."
+        recommendation = "🎯 RECOMMENDATION: Manual review suggested. Compare with provider's typical billing patterns and verify documentation."
     elif adjusted_fraud_prob > 20:
-        confidence_msg = f"🤖 ML model detects MINOR fraud indicators ({adjusted_fraud_prob:.1f}% confidence)"
+        confidence_msg = f"🤖 ML Model: MINOR fraud indicators ({adjusted_fraud_prob:.1f}%)"
+        interpretation = "📊 INTERPRETATION: Slight anomalies detected but within acceptable variance. Most claims in this range are legitimate with minor irregularities."
+        recommendation = "🎯 RECOMMENDATION: Standard processing acceptable. Spot check documentation if needed."
     elif adjusted_fraud_prob > 10:
-        confidence_msg = f"🤖 ML model detects LOW fraud risk ({adjusted_fraud_prob:.1f}% confidence)"
+        confidence_msg = f"🤖 ML Model: LOW fraud risk ({adjusted_fraud_prob:.1f}%)"
+        interpretation = "📊 INTERPRETATION: Claim appears normal with minimal deviation from expected patterns."
+        recommendation = "🎯 RECOMMENDATION: Process normally. No additional scrutiny required."
     else:
-        confidence_msg = f"🤖 ML model confidence: {adjusted_fraud_prob:.1f}% - claim appears legitimate"
+        confidence_msg = f"🤖 ML Model: Clean claim ({adjusted_fraud_prob:.1f}%)"
+        interpretation = "📊 INTERPRETATION: All indicators suggest this is a legitimate claim following standard billing practices."
+        recommendation = "🎯 RECOMMENDATION: Approve for payment processing."
     
-    # Build explanation
+    # Build explanation with context
     if not fraud_factors:
-        return [confidence_msg, "✅ No major red flags detected - claim appears legitimate"]
+        return [
+            confidence_msg,
+            interpretation,
+            "✅ No major red flags detected - claim appears legitimate",
+            recommendation
+        ]
     
-    explanation = [confidence_msg] + fraud_factors
+    explanation = [confidence_msg, interpretation]
+    
+    # Add contributing factors header
+    if fraud_factors:
+        explanation.append(f"🔍 CONTRIBUTING FACTORS ({len(fraud_factors)}):")
+    
+    explanation.extend(fraud_factors)
+    
+    # Add total risk score calculated
+    if fraud_factors:
+        explanation.append(f"📈 TOTAL RISK SCORE: {dynamic_fraud_boost} points (Base ML: {fraud_prob:.1f}% + Dynamic Risk: {dynamic_fraud_boost} pts = Final: {adjusted_fraud_prob:.1f}%)")
     
     # Add risk summary for multiple factors
     if len(risk_indicators) >= 4:
-        explanation.append(f"🚨 CRITICAL: {len(risk_indicators)} MAJOR RISK FACTORS DETECTED")
+        explanation.append(f"⚠️ SEVERITY: CRITICAL - {len(risk_indicators)} major risk factors combined increase fraud likelihood significantly")
     elif len(risk_indicators) >= 3:
-        explanation.append(f"⚠️ WARNING: {len(risk_indicators)} risk factors detected")
+        explanation.append(f"⚠️ SEVERITY: HIGH - {len(risk_indicators)} risk factors detected working together")
     elif len(risk_indicators) >= 2:
-        explanation.append(f"⚠️ NOTICE: {len(risk_indicators)} risk factors present")
+        explanation.append(f"⚠️ SEVERITY: MODERATE - {len(risk_indicators)} risk factors present")
+    elif len(risk_indicators) == 1:
+        explanation.append(f"ℹ️ SEVERITY: LOW - Single risk factor identified")
+    
+    # Add recommendation at the end
+    explanation.append(recommendation)
     
     return explanation
 

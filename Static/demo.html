@@ -789,6 +789,27 @@
                         <p>Policy violation</p>
                         <span class="badge badge-fraud">RULES</span>
                     </div>
+                    
+                    <div class="scenario-btn fraud" onclick="runScenario('client_scenario1_fraud')" style="border: 3px solid #dc3545;">
+                        <h4>🔴 CLIENT TEST 1</h4>
+                        <p><strong>FRAUD - Extreme Fee</strong></p>
+                        <p>$1820.50 • 104 days</p>
+                        <span class="badge badge-fraud">CLIENT</span>
+                    </div>
+                    
+                    <div class="scenario-btn legit" onclick="runScenario('client_scenario2_clean')" style="border: 3px solid #28a745;">
+                        <h4>✅ CLIENT TEST 2</h4>
+                        <p><strong>NO FRAUD - Normal</strong></p>
+                        <p>$368.50 • 1 day</p>
+                        <span class="badge badge-legit">CLIENT</span>
+                    </div>
+                    
+                    <div class="scenario-btn legit" onclick="runScenario('client_scenario3_dental')" style="border: 3px solid #6c757d;">
+                        <h4>⚪ CLIENT TEST 3</h4>
+                        <p><strong>NO FRAUD - Dental</strong></p>
+                        <p>$550.00 • 18 days</p>
+                        <span class="badge badge-legit">CLIENT</span>
+                    </div>
                 </div>
 
                 <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
@@ -809,12 +830,16 @@
                             <option value="PRV01001">Dr. Johnson - Orthopedics (⚠️ 2 Flags)</option>
                             <option value="PRV01002">Dr. Williams - General Practice</option>
                             <option value="PRV01003">Dr. Garcia - Physical Therapy</option>
+                            <option value="PRV73001">🔴 Dr Michael Tan - Specialist Physician (Client Test 1)</option>
+                            <option value="PRV74001">✅ Dr Michael Chen - General Practitioner (Client Test 2)</option>
+                            <option value="PRV76001">⚪ Dr Leonid Sten - Dental Surgeon (Client Test 3)</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
                         <label>Procedure (CPT Code)</label>
                         <select id="cptCode" onchange="updateExpectedAmount()">
+                            <option value="00215" data-base="150" data-max="250">00215 - Office visit Level 2-3 ($150-$250) [CLIENT TEST]</option>
                             <option value="99213" data-base="120" data-max="200">99213 - Office visit Level 3 ($120-$200)</option>
                             <option value="99214" data-base="180" data-max="300">99214 - Office visit Level 4 ($180-$300)</option>
                             <option value="99215" data-base="250" data-max="400">99215 - Office visit Level 5 ($250-$400)</option>
@@ -1158,6 +1183,42 @@
                 geo_mismatch: 0,
                 service_date: '2026-03-15',  // Future date
                 description: 'Future Service Date (Policy Violation)'
+            },
+            client_scenario1_fraud: {
+                provider_id: 'PRV73001',
+                provider_display_name: 'Dr Michael Tan - Specialist Physician (⚠️ Risky)',
+                cpt_code: '00215',
+                claim_amount: 1820.50,
+                units: 1,
+                days_to_submit: 104,
+                patient_age: 45,
+                geo_mismatch: 0,
+                service_date: '2025-10-29',
+                description: '🔴 CLIENT TEST 1: FRAUD - Extreme Units, Risky Provider'
+            },
+            client_scenario2_clean: {
+                provider_id: 'PRV74001',
+                provider_display_name: 'Dr Michael Chen - General Practitioner',
+                cpt_code: '00215',
+                claim_amount: 368.50,
+                units: 1,
+                days_to_submit: 1,
+                patient_age: 41,
+                geo_mismatch: 0,
+                service_date: '2026-02-17',
+                description: '✅ CLIENT TEST 2: NO FRAUD - Normal Claim'
+            },
+            client_scenario3_dental: {
+                provider_id: 'PRV76001',
+                provider_display_name: 'Dr Leonid Sten - Dental Surgeon',
+                cpt_code: '00215',
+                claim_amount: 550.00,
+                units: 1,
+                days_to_submit: 18,
+                patient_age: 45,
+                geo_mismatch: 0,
+                service_date: '2026-02-04',
+                description: '⚪ CLIENT TEST 3: NO FRAUD - Dental (Not Medical Eligible)'
             }
         };
         
