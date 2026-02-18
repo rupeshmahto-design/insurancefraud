@@ -50,6 +50,19 @@ def generate_synthetic_healthcare_data(n_records=5000, fraud_rate=0.08):
     icd10_codes = ['E11.9', 'I10', 'M25.561', 'J06.9', 'Z00.00', 'K21.9', 'F41.1', 'M54.5', 
                    'N18.6', 'I25.10', 'E78.5', 'F32.9']
     
+    # Check if providers.csv already exists with custom test providers
+    custom_providers = []
+    if os.path.exists('data/providers.csv'):
+        try:
+            existing_providers_df = pd.read_csv('data/providers.csv')
+            # Preserve custom test providers (PRV73001, PRV74001, PRV76001)
+            custom_mask = existing_providers_df['provider_id'].isin(['PRV73001', 'PRV74001', 'PRV76001'])
+            custom_providers = existing_providers_df[custom_mask].to_dict('records')
+            if len(custom_providers) > 0:
+                print(f"📌 Preserving {len(custom_providers)} custom test providers")
+        except Exception as e:
+            print(f"⚠️  Could not load existing providers: {e}")
+    
     # Generate providers
     n_providers = 200
     providers = []
@@ -70,6 +83,9 @@ def generate_synthetic_healthcare_data(n_records=5000, fraud_rate=0.08):
             'claims_per_month': np.random.randint(20, 200),
             'is_suspicious_provider': is_suspicious
         })
+    
+    # Add custom test providers back
+    providers.extend(custom_providers)
     
     providers_df = pd.DataFrame(providers)
     
